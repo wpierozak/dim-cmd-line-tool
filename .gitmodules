@@ -1,0 +1,3 @@
+[submodule "oof"]
+	path = oof
+	url = https://github.com/s9w/oof.git
