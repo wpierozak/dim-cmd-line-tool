@@ -20,5 +20,4 @@ private:
     Type m_type;
 };
 
-
 }

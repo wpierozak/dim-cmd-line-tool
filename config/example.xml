@@ -9,14 +9,14 @@
     </response_on>
 </Service>
 
-<Service type = "service_info" name = "FRED/TCM/TCM0/PARAMETERS_REQ" alias = "PARAMETERS_ANS">
+<Service type = "service_info" name = "FRED/TCM/TCM0/PARAMETERS_REQ" alias = "PARAMETERS_ANS" >
     <output>
         <file path = "ans.txt"/>
         <terminal hide="true"/>
     </output>
 </Service>
 
-<Service type = "rpc_info" name = "FRED/TCM/TCM0/PARAMETERS_ERR" alias = "PARAMETERS_ANS">
+<Service type = "rpc_info" name = "FRED/TCM/TCM0/PARAMETERS_ERR" alias = "PARAMETERS_ANS" timeout = "1000">
     <output>
         <file path = "ans.txt"/>
         <terminal hide="true"/>

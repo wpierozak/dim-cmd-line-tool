@@ -4,6 +4,7 @@
 #include<fstream>
 #include<optional>
 #include<cstdint>
+#include<chrono>
 #include"Service.hxx"
 
 namespace dim_handlers
@@ -12,10 +13,24 @@ namespace dim_handlers
  * @class Subscriber
  * @brief Represents service subscribing to either a DIM service or DIM RPC.
  */
-class Subscriber: virtual public Service
+class Subscriber: public Service
 {
 public:
+/**
+ * @brief Constructs a new Subscriber object.
+ * 
+ * @param name The name of the subscriber.
+ * @param alias The alias of the subscriber.
+ * @param type The type of the subscriber.
+ * @param timeout Optional timeout value in milliseconds. Default is std::nullopt.
+ */
+    Subscriber(std::string name, std::string alias, Type type, std::optional<uint32_t> timeout = std::nullopt)
+        : Service(name, alias, type), m_timeout(timeout) {}
 
+    ~Subscriber() 
+    { 
+        closeFile(); 
+    }
 /**
  * @brief Returns the number of available values fetched from the service since last clearData() call.
  * @return Number of available values.
@@ -25,12 +40,23 @@ public:
  * @brief Clears the data fetched from the service.
  * @return Number of cleared values.
  */
-    uint32_t clearData() { uint32_t size = m_serviceData.size(); m_serviceData.clear(); return size; }
+    uint32_t clearData() { 
+        uint32_t size = m_serviceData.size(); 
+        m_serviceData.clear(); 
+        return size; 
+    }
 /**
  * @brief Returns the latest data fetched from the service.
  * @return Latest data as a string.
  */
-    std::string getData() { return m_serviceData.front(); }
+    std::optional<std::string> getData() { 
+        if(m_serviceData.empty()){
+            return std::nullopt;
+        }
+        return m_serviceData.front(); 
+    }
+
+    virtual std::optional<std::string> waitForData() = 0;
 /**
  * @brief Removes the latest data fetched from the service.
  */
@@ -79,7 +105,7 @@ public:
  * @brief Sets the file name to which the output is saved.
  * @param fileName The file name as a string.
  */
-    void setFileName(const std::string &fileName);
+    bool setFile(const std::string &fileName);
 /**
  * @brief Saves the output to a file.
  * @param output The output to be saved as a string.
@@ -94,12 +120,30 @@ public:
  * @return True if the data is successfully handled, false otherwise.
  */
     virtual bool handleNewData(const std::string &data);
+
+protected:
+    bool checkTimeout(const std::chrono::high_resolution_clock::time_point& startTime, std::chrono::high_resolution_clock::time_point currentTime)
+    {
+        if(m_timeout.has_value() == false){
+            return true;
+        }
+        return std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count() > m_timeout.value();
+    }
+
 private:
     bool openFile();
-
+    void closeFile()
+    {
+        if(m_file.has_value()){
+            m_file->close();
+            m_file.reset();
+        }
+    }
+    
     std::list<std::string> m_serviceData;
     std::optional<std::string> m_fileName;
-    std::optional<std::ifstream> m_file;
+    std::optional<std::ofstream> m_file;
+    std::optional<uint32_t> m_timeout;
     bool m_hideTerminal = false;
 };
 } // namespace dim_handlers
