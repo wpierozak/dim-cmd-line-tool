@@ -8,11 +8,13 @@ class ServiceInfo: public Subscriber, public DimInfo
 {
 public:
     ServiceInfo(std::string name, std::string alias)
-        : Subscriber(name, alias, Type::ServiceInfo) {}
+        : Subscriber(name, alias, Type::ServiceInfo), DimInfo(const_cast<char*>(name.c_str()), const_cast<char*>(SERVICE_NO_LINK.data())){}
 
     void infoHandler() override {
         std::string newData = getString();
-        handleNewData(newData);
+        if(newData != SERVICE_NO_LINK){
+            handleNewData(newData);
+        }
     }
 
     std::optional<std::string> waitForData() override {
@@ -25,6 +27,8 @@ public:
         }
         return {Subscriber::getData()};
     }
+private:
+    static constexpr std::string_view SERVICE_NO_LINK = "<!>NO_LINK<!>";
 };
 
 }
