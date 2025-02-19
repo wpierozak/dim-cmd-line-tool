@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/run_google_tests.dir/tests/Logging/google_tests.cxx.o CMakeFiles/run_google_tests.dir/tests/main.cxx.o CMakeFiles/run_google_tests.dir/src/Logging/Logger.cxx.o -o run_google_tests  -lgtest -lgtest_main 

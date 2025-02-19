@@ -1,4 +1,0 @@
-/home/wiktor/dim-cmd-line-tool/build/CMakeFiles/run_google_tests.dir
-/home/wiktor/dim-cmd-line-tool/build/CMakeFiles/test.dir
-/home/wiktor/dim-cmd-line-tool/build/CMakeFiles/edit_cache.dir
-/home/wiktor/dim-cmd-line-tool/build/CMakeFiles/rebuild_cache.dir
