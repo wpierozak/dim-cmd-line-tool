@@ -1,3 +1,5 @@
+#pragma once
+
 #include<vector>
 #include<functional>
 #include<list>
@@ -25,9 +27,11 @@ public:
  * @param timeout Optional timeout value in milliseconds. Default is std::nullopt.
  */
     Subscriber(std::string name, std::string alias, Type type, std::optional<uint32_t> timeout = std::nullopt)
-        : Service(name, alias, type), m_timeout(timeout) {}
+        : Service(name, alias, type), m_timeout(timeout) {
+            
+        }
 
-    ~Subscriber() 
+    virtual ~Subscriber() 
     { 
         closeFile(); 
     }

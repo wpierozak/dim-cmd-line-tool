@@ -7,16 +7,19 @@ namespace dim_handlers
 
 void Subscriber::print(TerminalOutput output)
 {
-    LOG(INFO) << "Service: " << getName() << " Alias: " << getAlias();
-    LOG(INFO) << "Data: " << getData().value();
+    if(m_serviceData.empty()){
+        return;
+    }
+    LOG_SERVICE(Service::getName(), m_serviceData.front());
 }
 
 bool Subscriber::setFile(const std::string &fileName)
 {
     if(m_fileName.has_value()){
-        LOGGER.closeFile(m_fileName.value());
+        CLOSE_LOG_FILE(m_fileName.value());
     }
-    return LOGGER.openFile(fileName);
+    m_fileName = fileName;
+    return OPEN_LOG_FILE(m_fileName.value());
 }
 
 bool Subscriber::saveToFile(const std::string& output)
@@ -24,7 +27,7 @@ bool Subscriber::saveToFile(const std::string& output)
     if(m_fileName.has_value() == false){
         return true;
     }
-    return LOGGER.writeToFile(m_fileName.value(), output);
+    return LOG_TO_FILE(m_fileName.value(), output);
 }
 
 bool Subscriber::handleNewData(const std::string &data)

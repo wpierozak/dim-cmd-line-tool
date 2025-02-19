@@ -1,4 +1,6 @@
-#include<dic.hxx>
+#pragma once
+
+#include<dim/dic.hxx>
 #include"Service.hxx"
 #include<Utils/Result.hxx>
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include<string>
 
 namespace dim_handlers

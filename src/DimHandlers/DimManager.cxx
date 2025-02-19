@@ -1,34 +1,42 @@
-#include<DimHandlers/DimHandlersManager.hxx>
+#include<DimHandlers/DimManager.hxx>
 #include<thread>
 #include<mutex>
+#include<Logging/Logger.hxx>
+
 namespace dim_handlers
 {
 
-DimHandlersManager DimHandlersManager::s_Instance = DimHandlersManager();
+DimManager DimManager::s_Instance = DimManager();
 
-utils::Result<bool,std::string> DimHandlersManager::createSubscriber(const std::string& name, const std::string& alias, Subscriber::Type type)
+utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& name, const std::string& alias, Subscriber::Type type)
 {
     if(m_subscribersByName.find(name) != m_subscribersByName.end()){
+        LOG(ERROR) << "Subscriber to " << name << " already exists.";
         return {.result=false,.error="Subscriber of that name already exists."};
     }
     if(m_subscribersByAlias.find(alias) != m_subscribersByAlias.end()){
+        LOG(ERROR) << "Subscriber of alias: '" << alias << "' already exists";
         return {.result=false,.error="Subscriber of that alias already exists."};
     }
 
     std::shared_ptr<Subscriber> subscriber;
     if(type == Subscriber::Type::ServiceInfo){
+        LOG(DEBUG) << "Creating ServiceInfo subscriber with name: " << name << " and alias: " << alias;
         subscriber = std::make_shared<ServiceInfo>(name, alias);
     }else if(type == Subscriber::Type::RpcInfo){
+        LOG(DEBUG) << "Creating RpcInfo subscriber with name: " << name << " and alias: " << alias;
         subscriber = std::make_shared<RpcInfo>(name, alias);
     }else{
-        return {.result=false,.error="Unknown subscriber type."};
+        return {.error="Unknown subscriber type."};
     }
 
     m_subscribersByName[name] = subscriber;
     m_subscribersByAlias[alias] = subscriber;
+    LOG(DEBUG) << "Subscriber '" << name << "' with alias '" << alias << "' successfully initialized";
+    return {.result=true};
 }
 
-utils::Result<bool,std::string> DimHandlersManager::createCommandSender(const std::string& service, const std::string& alias)
+utils::Result<bool,std::string> DimManager::createCommandSender(const std::string& service, const std::string& alias)
 {
     if(m_commandSendersByName.find(service) != m_commandSendersByName.end()){
         return {.result=false,.error="Command sender of that name already exists."};
@@ -43,7 +51,7 @@ utils::Result<bool,std::string> DimHandlersManager::createCommandSender(const st
     return {.result=true};
 }
 
-utils::Result<bool,std::string> DimHandlersManager::addCommand(const std::string& commandSender, const std::string& commandName, const std::string& commandText)
+utils::Result<bool,std::string> DimManager::addCommand(const std::string& commandSender, const std::string& commandName, const std::string& commandText)
 {
     if(m_commandSendersByName.find(commandSender) == m_commandSendersByName.end()){
         return {.result=false,.error="Command sender does not exist."};
@@ -51,7 +59,7 @@ utils::Result<bool,std::string> DimHandlersManager::addCommand(const std::string
     return m_commandSendersByName[commandSender]->addCommand(commandName, commandText);
 }
 
-utils::Result<bool,std::string> DimHandlersManager::addCommandFromFile(const std::string& commandSender, const std::string& commandName, const std::string& fileName)
+utils::Result<bool,std::string> DimManager::addCommandFromFile(const std::string& commandSender, const std::string& commandName, const std::string& fileName)
 {
     if(m_commandSendersByName.find(commandSender) == m_commandSendersByName.end()){
         return {.result=false,.error="Command sender does not exist."};
@@ -59,7 +67,7 @@ utils::Result<bool,std::string> DimHandlersManager::addCommandFromFile(const std
     return m_commandSendersByName[commandSender]->addCommandFromFile(commandName, fileName);
 }
 
-utils::Result<bool,std::string> DimHandlersManager::addResponseServiceToCommandSender(const std::string& service, const std::string& responseService)
+utils::Result<bool,std::string> DimManager::addResponseServiceToCommandSender(const std::string& service, const std::string& responseService)
 {
     if(m_commandSendersByName.find(service) == m_commandSendersByName.end()){
         return {.result=false,.error="Command sender does not exist."};
@@ -69,7 +77,7 @@ utils::Result<bool,std::string> DimHandlersManager::addResponseServiceToCommandS
     return {.result=true};
 }
 
-utils::Result<std::string,std::string> DimHandlersManager::executeCommand(const std::string& service, const std::string& command, bool waitForResponse)
+utils::Result<std::string,std::string> DimManager::executeCommand(const std::string& service, const std::string& command, bool waitForResponse)
 {
     if(m_commandSendersByName.find(service) == m_commandSendersByName.end()){
         return {.error="Command sender does not exist."};
@@ -83,7 +91,7 @@ utils::Result<std::string,std::string> DimHandlersManager::executeCommand(const 
     return {.result="Command sent."};
 }
 
-utils::Result<std::string,std::string> DimHandlersManager::waitForData(const std::string& commandService)
+utils::Result<std::string,std::string> DimManager::waitForData(const std::string& commandService)
 {
     std::mutex listMutex;
     std::map<std::string, std::optional<std::string>> dataMap;
@@ -125,7 +133,7 @@ utils::Result<std::string,std::string> DimHandlersManager::waitForData(const std
     return {.error = "Unexpected behaviour. Multiple responses received."};
 }
 
-utils::Result<std::string,std::string> DimHandlersManager::getServiceData(const std::string& service, bool getImmediateData = false)
+utils::Result<std::string,std::string> DimManager::getServiceData(const std::string& service, bool getImmediateData)
 {
     if(m_subscribersByName.find(service) == m_subscribersByName.end()){
         return {.error="Subscriber does not exist."};
@@ -139,7 +147,11 @@ utils::Result<std::string,std::string> DimHandlersManager::getServiceData(const 
         return {.error="No data available."};
     }
 
-    return {.result=m_subscribersByName[service]->waitForData().value()};
+    auto data = m_subscribersByName[service]->waitForData();
+    if(data == std::nullopt){
+        return {.error="No data received."};
+    }
+    return {.result = data};
 }
 
 }

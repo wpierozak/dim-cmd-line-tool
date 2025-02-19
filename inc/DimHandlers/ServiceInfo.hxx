@@ -1,5 +1,7 @@
+#pragma once
+
 #include"Subscriber.hxx"
-#include<dic.hxx>
+#include<dim/dic.hxx>
 #include<thread>
 
 namespace dim_handlers

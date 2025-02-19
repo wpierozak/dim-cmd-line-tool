@@ -1,3 +1,5 @@
+#pragma once
+
 #include"ServiceInfo.hxx"
 #include"RpcInfo.hxx"
 #include"CommandSender.hxx"
@@ -7,10 +9,10 @@
 
 namespace dim_handlers
 {
-class DimHandlersManager
+class DimManager
 {
 public:
-    static DimHandlersManager& Instance()
+    static DimManager& Instance()
     {
         return s_Instance;
     }
@@ -26,10 +28,10 @@ public:
     utils::Result<std::string,std::string> getServiceData(const std::string& service, bool getImmediateData = false);
 
 private:
-    DimHandlersManager() = default;
+    DimManager() = default;
     utils::Result<std::string,std::string> waitForData(const std::string& commandService);
 
-    static DimHandlersManager s_Instance;
+    static DimManager s_Instance;
     std::map<std::string, std::shared_ptr<Subscriber>> m_subscribersByName;
     std::map<std::string, std::shared_ptr<Subscriber>> m_subscribersByAlias;
 

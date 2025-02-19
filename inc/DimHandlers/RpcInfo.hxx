@@ -1,10 +1,13 @@
-#include<dic.hxx>
+#pragma once
+
+#include<dim/dic.hxx>
 #include"Subscriber.hxx"
 
 namespace dim_handlers
 {
 class RpcInfo: public Subscriber, public DimRpcInfo
 {
+public:
     RpcInfo(std::string name, std::string alias)
         : Subscriber(name, alias, Type::RpcInfo), 
         DimRpcInfo(const_cast<char*>(name.c_str()), const_cast<char*>(RpcInfo::RPC_NO_LINK.data())) 
@@ -27,5 +30,5 @@ class RpcInfo: public Subscriber, public DimRpcInfo
     }
 private:
     static constexpr std::string_view RPC_NO_LINK = "<!>NO_LINK<!>";
-}
+};
 } // namespace dim_handlers
