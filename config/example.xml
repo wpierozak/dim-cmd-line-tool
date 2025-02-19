@@ -29,6 +29,7 @@
         <command name = "mutli-line-cmd"/>
         <response print="true"/>
     </send>
+    <wait till = "response"/>
     <wait time = "1000"/>
     <send>
         <service alias = "PARAMETERS_REQ"/>

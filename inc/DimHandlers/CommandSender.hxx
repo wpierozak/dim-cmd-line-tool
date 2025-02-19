@@ -32,6 +32,11 @@ public:
     {
         m_responseServices.emplace(serviceName);
     }
+
+    const std::set<std::string>& getResponseServices() const
+    {
+        return m_responseServices;
+    }
    
 private:
     std::map<std::string, std::string> m_commands;

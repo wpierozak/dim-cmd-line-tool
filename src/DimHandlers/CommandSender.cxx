@@ -20,6 +20,7 @@ utils::Result<bool,std::string> CommandSender::addCommandFromFile(const std::str
 
     return {.result=true};
 }
+
 utils::Result<bool,std::string> CommandSender::addCommand(const std::string &commandName, const std::string &commandText)
 {
     if(m_commands.find(commandName) != m_commands.end()){

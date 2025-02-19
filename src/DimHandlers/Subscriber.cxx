@@ -1,4 +1,5 @@
 #include<DimHandlers/Subscriber.hxx>
+#include<Logging/Logger.hxx>
 #include<iostream>
 
 namespace dim_handlers
@@ -6,42 +7,30 @@ namespace dim_handlers
 
 void Subscriber::print(TerminalOutput output)
 {
-    if (output == TerminalOutput::Latest)
-        std::cout << getData() << std::endl;
-    else
-        for (const auto &data : m_serviceData)
-            std::cout << data << std::endl;
+    LOG(INFO) << "Service: " << getName() << " Alias: " << getAlias();
+    LOG(INFO) << "Data: " << getData().value();
 }
 
 bool Subscriber::setFile(const std::string &fileName)
 {
-    if(m_file.has_value()){
-        m_file->close();
-        m_file.reset();
+    if(m_fileName.has_value()){
+        LOGGER.closeFile(m_fileName.value());
     }
-    m_fileName = fileName;
-    m_file = std::ifstream(fileName);
-    if(m_file->is_open()==false){
-        return false;
-    }
-    return true;
+    return LOGGER.openFile(fileName);
 }
 
 bool Subscriber::saveToFile(const std::string& output)
 {
-    if(m_file.has_value()==false){
-        return false;
+    if(m_fileName.has_value() == false){
+        return true;
     }
-    (*m_file) << output;
-    return true;
+    return LOGGER.writeToFile(m_fileName.value(), output);
 }
 
 bool Subscriber::handleNewData(const std::string &data)
 {
     m_serviceData.emplace_front(data);
-    if(m_file.has_value()){
-        (*m_file) << data;
-    }
+    saveToFile(data);
     if(m_hideTerminal==false){
         print(TerminalOutput::Latest);
     }
