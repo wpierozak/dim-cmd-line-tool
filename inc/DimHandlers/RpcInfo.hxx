@@ -28,6 +28,16 @@ public:
         }
         return {Subscriber::getData()};
     }
+
+    void rpcInfoHandler() override
+    {
+        std::string newData = getString();
+        LOG_SERVICE(DEBUG) << "Received new data";
+
+        if(newData != RPC_NO_LINK){
+            handleNewData(newData);
+        }
+    }
 private:
     static constexpr std::string_view RPC_NO_LINK = "<!>NO_LINK<!>";
 };

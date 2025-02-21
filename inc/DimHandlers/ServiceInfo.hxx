@@ -12,18 +12,24 @@ public:
     ServiceInfo(std::string name, std::string alias)
         : Subscriber(name, alias, Type::ServiceInfo), DimInfo(const_cast<char*>(name.c_str()), const_cast<char*>(SERVICE_NO_LINK.data())){}
 
+
     void infoHandler() override {
         std::string newData = getString();
+        LOG_SERVICE(DEBUG) << "Received new data";
+
         if(newData != SERVICE_NO_LINK){
             handleNewData(newData);
         }
     }
 
     std::optional<std::string> waitForData() override {
+        LOG_SERVICE(DEBUG) << " - waiting for data; timeout: " << timeout();
+
         auto startTime = std::chrono::high_resolution_clock::now();
         while(availableData() == 0){
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             if(checkTimeout(startTime, std::chrono::high_resolution_clock::now())){
+                LOG_SERVICE(DEBUG) << " - timeout reached";
                 return std::nullopt;
             }
         }

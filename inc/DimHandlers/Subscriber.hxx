@@ -129,9 +129,13 @@ protected:
     bool checkTimeout(const std::chrono::high_resolution_clock::time_point& startTime, std::chrono::high_resolution_clock::time_point currentTime)
     {
         if(m_timeout.has_value() == false){
-            return true;
+            return false;
         }
         return std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count() > m_timeout.value();
+    }
+    uint32_t timeout()
+    {
+        return m_timeout.value_or(0);
     }
 
 private:

@@ -1,6 +1,10 @@
 #pragma once
 
+#include<Logging/Logger.hxx>
 #include<string>
+
+#define LOG_SERVICE(mode) Logger::Get()(mode,Service::getName())
+#define LOG_SERVICE_DATA(data) Logger::Get().printServiceData(Service::getName(), data);
 
 namespace dim_handlers
 {

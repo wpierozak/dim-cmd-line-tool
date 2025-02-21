@@ -19,6 +19,31 @@ Logger& Logger::operator()(Mode mode)
         case Mode::Error:
             std::cout << std::endl << oof::fg_color({255,0,0}) << "[ERROR] " << oof::reset_formatting();
             break;
+        case Mode::Data:
+            std::cout << std::endl << oof::fg_color({247,150,250}) << "[DATA] " << oof::reset_formatting();
+            break;
+    }
+    return *this;
+}
+
+Logger& Logger::operator()(Mode mode, std::string_view service)
+{
+    switch(mode){
+        case Mode::Debug:
+            std::cout << std::endl << oof::fg_color({0,0,255}) << "[DEBUG] " << "[" << service << "] " << oof::reset_formatting();
+            break;
+        case Mode::Info:
+            std::cout << std::endl << oof::fg_color({0,255,0}) << "[INFO] " << "[" << service << "] " << oof::reset_formatting();
+            break;
+        case Mode::Warning:
+            std::cout << std::endl << oof::fg_color({255,255,0}) << "[WARNING] " << "[" << service << "] " << oof::reset_formatting();
+            break;
+        case Mode::Error:
+            std::cout << std::endl << oof::fg_color({255,0,0}) << "[ERROR] " << "[" << service << "] " << oof::reset_formatting();
+            break;
+            case Mode::Data:
+            std::cout << std::endl << oof::fg_color({247,150,250}) << "[DATA] " << "[" << service << "] " << oof::reset_formatting();
+            break;
     }
     return *this;
 }
@@ -33,6 +58,12 @@ Logger& Logger::operator<<(const T& message){
 Logger& Logger::operator<<(const char* message)
 {
     std::cout <<  message;
+    return *this;
+}
+
+Logger& Logger::operator<<(uint32_t value)
+{
+    std::cout << value;
     return *this;
 }
 
@@ -86,8 +117,7 @@ bool Logger::writeToFile(const std::string& fileName, const std::string& content
     return false;
 }
 
-void Logger::printServiceData(const std::string& serviceName, const std::string& data)
+void Logger::printServiceData(std::string_view service,  std::string_view data)
 {
-    LOG(INFO) << "Service: " << serviceName;
-    LOG(INFO) << " Data: " << data;
+    (*this)(DATA,service) << data;
 }

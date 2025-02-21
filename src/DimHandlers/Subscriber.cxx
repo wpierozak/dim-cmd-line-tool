@@ -10,7 +10,7 @@ void Subscriber::print(TerminalOutput output)
     if(m_serviceData.empty()){
         return;
     }
-    LOG_SERVICE(Service::getName(), m_serviceData.front());
+    LOG_DATA(Service::getName(), m_serviceData.front());
 }
 
 bool Subscriber::setFile(const std::string &fileName)
