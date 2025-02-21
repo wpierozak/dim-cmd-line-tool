@@ -21,13 +21,19 @@ public:
     utils::Result<bool,std::string> addCommandFromFile(const std::string &commandName, const std::string &fileName);
     utils::Result<bool,std::string> addCommand(const std::string &commandName, const std::string &commandText);
 
-    bool sendCommand(const std::string &commandName)
+    bool sendKnownCommand(const std::string &commandName)
     {
+        LOG_SERVICE(DEBUG) << "Executing " << commandName << "...";
         if(m_commands.find(commandName) == m_commands.end()){
             return false;
         }
 
         return DimClient::sendCommand(getName().c_str(), m_commands[commandName].c_str());
+    }
+
+    bool sendCommand(const std::string& command)
+    {
+        return DimClient::sendCommand(getName().c_str(), command.c_str());
     }
 
     void addResponseService(const std::string &serviceName)

@@ -90,6 +90,20 @@ utils::Result<bool,std::string> DimManager::addResponseServiceToCommandSender(co
     return {.result=true};
 }
 
+utils::Result<std::string,std::string> DimManager::executeKnownCommand(const std::string& service, const std::string& command, bool waitForResponse)
+{
+    if(m_commandSendersByName.find(service) == m_commandSendersByName.end()){
+        return {.error="Command sender does not exist."};
+    }
+
+    if(waitForResponse){
+        m_commandSendersByName[service]->sendKnownCommand(command);
+        return waitForData(service);
+    }
+    m_commandSendersByName[service]->sendKnownCommand(command);
+    return {.result="Command sent."};
+}
+
 utils::Result<std::string,std::string> DimManager::executeCommand(const std::string& service, const std::string& command, bool waitForResponse)
 {
     if(m_commandSendersByName.find(service) == m_commandSendersByName.end()){

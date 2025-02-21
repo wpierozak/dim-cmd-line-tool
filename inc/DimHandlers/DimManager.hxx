@@ -7,6 +7,8 @@
 #include<memory>
 #include<Utils/Result.hxx>
 
+#define DIM_MANAGER dim_handlers::DimManager::Instance()
+
 namespace dim_handlers
 {
 class DimManager
@@ -26,6 +28,7 @@ public:
 
     utils::Result<bool,std::string> addResponseServiceToCommandSender(const std::string& service, const std::string& responseService);
 
+    utils::Result<std::string,std::string> executeKnownCommand(const std::string& service, const std::string& command, bool waitForResponse=false);
     utils::Result<std::string,std::string> executeCommand(const std::string& service, const std::string& command, bool waitForResponse=false);
     utils::Result<std::string,std::string> getServiceData(const std::string& service, bool getImmediateData = false);
 
