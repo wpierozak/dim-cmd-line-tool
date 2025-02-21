@@ -14,6 +14,11 @@ struct Result
     {
         return result.has_value();
     }
+
+    bool isError() const
+    {
+        return error.has_value();
+    }
 };
 
 } // namespace utils

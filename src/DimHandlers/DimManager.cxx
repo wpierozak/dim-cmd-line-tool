@@ -36,6 +36,19 @@ utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& 
     return {.result=true};
 }
 
+utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& service, const std::string& alias, const std::string& file, Subscriber::Type type)
+{
+    auto creationRes = createSubscriber(service,alias,type);
+    if(creationRes.isError()){
+        return creationRes;
+    }
+    bool success = m_subscribersByName[service]->setFile(file);
+    if(!success){
+        return {.error="Failed to open a file"};
+    }
+    return {.result=true};
+}
+
 utils::Result<bool,std::string> DimManager::createCommandSender(const std::string& service, const std::string& alias)
 {
     if(m_commandSendersByName.find(service) != m_commandSendersByName.end()){

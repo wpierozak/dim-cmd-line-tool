@@ -111,7 +111,11 @@ bool Logger::writeToFile(const std::string& fileName, const std::string& content
     if(m_files.find(fileName) != m_files.end())
     {
         std::lock_guard<std::mutex> lock(m_files[fileName].mutex);
-        m_files[fileName].file << content;
+        if(m_files[fileName].file.is_open() == false){
+            LOG(ERROR) << "File " << fileName << " is not open!";
+        }
+        m_files[fileName].file << std::endl << content << std::endl;
+        m_files[fileName].file.flush();
         return true;
     }
     return false;

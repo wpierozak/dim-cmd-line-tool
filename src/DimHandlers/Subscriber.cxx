@@ -27,13 +27,16 @@ bool Subscriber::saveToFile(const std::string& output)
     if(m_fileName.has_value() == false){
         return true;
     }
+    LOG_SERVICE(DEBUG) << "Logging to file...";
     return LOG_TO_FILE(m_fileName.value(), output);
 }
 
 bool Subscriber::handleNewData(const std::string &data)
 {
     m_serviceData.emplace_front(data);
-    saveToFile(data);
+    if(!saveToFile(data)){
+        LOG_SERVICE(ERROR) << "File update failed!";
+    }
     if(m_hideTerminal==false){
         print(TerminalOutput::Latest);
     }
