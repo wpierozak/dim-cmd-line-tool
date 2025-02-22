@@ -8,7 +8,7 @@ namespace dim_handlers
 
 DimManager DimManager::s_Instance = DimManager();
 
-utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& name, const std::string& alias, Subscriber::Type type)
+utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& name, const std::string& alias, Subscriber::Type type, std::optional<uint32_t> timeout)
 {
     if(m_subscribersByName.find(name) != m_subscribersByName.end()){
         LOG(ERROR) << "Subscriber to " << name << " already exists.";
@@ -22,10 +22,15 @@ utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& 
     std::shared_ptr<Subscriber> subscriber;
     if(type == Subscriber::Type::ServiceInfo){
         LOG(DEBUG) << "Creating ServiceInfo subscriber with name: " << name << " and alias: " << alias;
-        subscriber = std::make_shared<ServiceInfo>(name, alias);
+        subscriber = std::make_shared<ServiceInfo>(name, alias, timeout);
     }else if(type == Subscriber::Type::RpcInfo){
         LOG(DEBUG) << "Creating RpcInfo subscriber with name: " << name << " and alias: " << alias;
-        subscriber = std::make_shared<RpcInfo>(name, alias);
+        if(timeout.has_value()){
+            subscriber = std::make_shared<RpcInfo>(name, alias,timeout.value());
+        }
+        else{
+            subscriber = std::make_shared<RpcInfo>(name, alias);
+        }
     }else{
         return {.error="Unknown subscriber type."};
     }
@@ -33,12 +38,17 @@ utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& 
     m_subscribersByName[name] = subscriber;
     m_subscribersByAlias[alias] = subscriber;
     LOG(DEBUG) << "Subscriber '" << name << "' with alias '" << alias << "' successfully initialized";
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    LOG(DEBUG) << "Clearing start-up data for subscriber '" << name << "'";
+    m_subscribersByName[name]->clearData();
+
     return {.result=true};
 }
 
-utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& service, const std::string& alias, const std::string& file, Subscriber::Type type)
+utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& service, const std::string& alias, const std::string& file, Subscriber::Type type, std::optional<uint32_t> timeout)
 {
-    auto creationRes = createSubscriber(service,alias,type);
+    auto creationRes = createSubscriber(service,alias,type,timeout);
     if(creationRes.isError()){
         return creationRes;
     }
@@ -126,14 +136,19 @@ utils::Result<std::string,std::string> DimManager::waitForData(const std::string
 
     #pragma omp parallel num_threads(threadsNum)
     {
+        #pragma omp master
+        {
         for(const auto& responseService: m_commandSendersByName[commandService]->getResponseServices()){
             if(m_subscribersByName.find(responseService) != m_subscribersByName.end()){
                 #pragma omp task
                 {
                     auto result = m_subscribersByName[responseService]->waitForData();
                     if(result.has_value()){
+                        LOG(DEBUG) << "Received response to " << commandService << " on " << responseService;
                         std::lock_guard<std::mutex> lock(listMutex);
                         dataMap[responseService] = result;
+                    }else{
+                        LOG(DEBUG) << "No response to " << commandService << " on " << responseService;
                     }
                 }
             } else if(m_subscribersByAlias.find(responseService) != m_subscribersByAlias.end()){
@@ -141,12 +156,16 @@ utils::Result<std::string,std::string> DimManager::waitForData(const std::string
                 {
                     auto result = m_subscribersByAlias[responseService]->waitForData();
                     if(result.has_value()){
+                        LOG(DEBUG) << "Received response to " << commandService << " on " << responseService;
                         std::lock_guard<std::mutex> lock(listMutex);
                         dataMap[responseService] = result;
+                    } else{
+                        LOG(DEBUG) << "No response to " << commandService << " on " << responseService;
                     }
                 }
             }
         }
+    }
     }
 
     if(dataMap.empty()){
