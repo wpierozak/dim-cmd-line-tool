@@ -5,9 +5,9 @@ Logger Logger::Instance = Logger();
 
 Log Logger::operator()(Mode mode, std::string_view service)
 {
-   if(m_quietLogs.has_value()){
+   if(m_quietLogs != nullptr){
     return (*this)(m_quietLogs->monitor(),mode,service);
-   } else if(m_logFile.has_value()){
+   } else if(m_logFile != nullptr){
     return (*this)(m_logFile->monitor(),mode,service);
    } 
    return(*this)(m_stdStream,mode,service);

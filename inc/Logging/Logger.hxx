@@ -41,6 +41,35 @@ public:
     void closeFile(const std::string& name);
     bool writeToFile(const std::string& fileName, const std::string& content);
 
+    std::string getQuietLogs()
+    {
+        if(isQuiet()){
+            return m_quietLogs->monitor().str();
+        }
+        return "";
+    }
+
+    bool isQuiet()
+    {
+        return m_quietLogs != nullptr;
+    }
+
+    void queit(bool on)
+    {
+        if(on && !isQuiet()){
+            m_stdStream.flush();
+            m_quietLogs = std::make_unique<StringStream>();
+        } else if(!on && isQuiet()){
+            m_quietLogs.reset();
+        }
+    }
+
+    bool logToFile(const std::string& fileName)
+    {
+        m_logFile = std::make_unique<FileStream>(fileName);
+        return m_logFile->isOpen();
+    }
+
 private:
     Log operator()(StreamMonitor& stream, Mode mode, std::string_view service);
     oof::color modeColor(Mode mode);
@@ -53,7 +82,7 @@ private:
     
     bool m_quietMode{false};
 
-    std::optional<FileStream> m_logFile;
-    std::optional<StringStream> m_quietLogs;
+    std::unique_ptr<FileStream> m_logFile;
+    std::unique_ptr<StringStream> m_quietLogs;
     StreamMonitor m_stdStream{std::cout};
 };
