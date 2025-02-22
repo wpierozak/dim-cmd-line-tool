@@ -1,9 +1,12 @@
 #pragma once
-
+#include"Stream.hxx"
+#include"Log.hxx"
 #include<oof.h>
 #include<iostream>
 #include<fstream>
 #include<mutex>
+#include<map>
+#include<memory>
 
 #define LOG(mode) Logger::Get()(mode)
 
@@ -29,14 +32,8 @@ public:
         return Instance;
     }
 
-    Logger& operator()(Mode mode);
-    Logger& operator()(Mode mode, std::string_view service);
-
-    template<typename T>
-    Logger& operator<<(const T& message);
-    Logger& operator<<(const char* message);
-    Logger& operator<<(uint32_t value);
-
+    Log operator()(Mode mode, std::string_view service = std::string_view());
+    
     void printServiceData(std::string_view service,  std::string_view data);
 
     bool isFileOpen(const std::string& name);
@@ -45,18 +42,18 @@ public:
     bool writeToFile(const std::string& fileName, const std::string& content);
 
 private:
-    struct File
-    {
-        const std::string name;
-        std::ofstream file;
-        std::mutex mutex;
-    };
+    Log operator()(StreamMonitor& stream, Mode mode, std::string_view service);
+    oof::color modeColor(Mode mode);
+    std::string modeName(Mode mode);
 
     static Logger Instance;
     Logger() = default;
 
-    Mode m_mode;
-    std::mutex m_loggerMutex;
-    std::unordered_map<std::string,File> m_files;
+    std::map<std::string,std::unique_ptr<FileStream>> m_files;
+    
+    bool m_quietMode{false};
 
+    std::optional<FileStream> m_logFile;
+    std::optional<StringStream> m_quietLogs;
+    StreamMonitor m_stdStream{std::cout};
 };
