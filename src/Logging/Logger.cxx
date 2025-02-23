@@ -16,11 +16,11 @@ Log Logger::operator()(Mode mode, std::string_view service)
 Log Logger::operator()(StreamMonitor& stream, Mode mode, std::string_view service)
 {
     Log log(stream);
-    log << "\n" << oof::fg_color(modeColor(mode)) << "[" << modeName(mode) << "] ";
+    log << "\n" << color::text(modeColor(mode)) << "[" << modeName(mode) << "] ";
     if(service.empty() == false){
         log << "[" << service << "] ";
     }
-    log.format(oof::reset_formatting());
+    log << color::reset();
     return log;   
 }
 
@@ -71,19 +71,19 @@ void Logger::printServiceData(std::string_view service, std::string_view data)
     (*this)(DATA,service) << data.data();
 }
 
-oof::color Logger::modeColor(Mode mode)
+color::Color Logger::modeColor(Mode mode)
 {
     switch (mode) {
         case Mode::Info:
-            return {0,255,0};
+            return color::Color::GREEN;
         case Mode::Warning:
-            return {255,255,0};
+            return color::Color::YELLOW;
         case Mode::Error:
-            return {255,0,0};
+            return color::Color::RED;
         case Mode::Debug:
-            return {0,0,255};
-        default:
-        return {200, 162, 200};
+            return color::Color::BLUE;
+        case Mode::Data:
+            return color::Color::MAGENTA;
     }
 }
 

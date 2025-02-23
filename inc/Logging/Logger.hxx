@@ -7,6 +7,7 @@
 #include<mutex>
 #include<map>
 #include<memory>
+#include"TextColor.hxx"
 
 #define LOG(mode) Logger::Get()(mode)
 
@@ -76,7 +77,7 @@ public:
 
 private:
     Log operator()(StreamMonitor& stream, Mode mode, std::string_view service);
-    oof::color modeColor(Mode mode);
+    color::Color modeColor(Mode mode);
     std::string modeName(Mode mode);
 
     static Logger Instance;
