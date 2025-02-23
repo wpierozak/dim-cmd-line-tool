@@ -1,55 +1,17 @@
-<Service type = "command" name = "FRED/TCM/TCM0/PARAMETERS_REQ" alias = "PARAMETERS_REQ">
+<Configuration>
+<Service type = "command" name = "ALF/SERIAL_0/ENDPOINT_0/LINK_0/SWT_SEQUENCE/RpcIn" alias = "LINK_0_IN">
     <commands>
-        <command name = "mutli-line-cmd" file="cmd.txt"/>
-        <command name = "another-cmd">DELAY_A,WRITE,1</command>
+        <command name = "sc_reset">sc_reset</command>
+        <command name = "read" file ="cmd"/>
     </commands>
     <response_on>
-        <service alias = "PARAMETERS_ANS"/>
-        <service name = "FRED/TCM/TCM0/PARAMETERS_ERR"/>
+        <service>LINK_0_OUT</service>
     </response_on>
 </Service>
 
-<Service type = "service_info" name = "FRED/TCM/TCM0/PARAMETERS_REQ" alias = "PARAMETERS_ANS" >
+<Service type = "service_info" name = "ALF/SERIAL_0/ENDPOINT_0/LINK_0/SWT_SEQUENCE/RpcOut" alias = "LINK_0_OUT" >
     <output>
-        <file path = "ans.txt"/>
-        <terminal hide="true"/>
+        <file path = "link_0_out.txt"/>
     </output>
 </Service>
-
-<Service type = "rpc_info" name = "FRED/TCM/TCM0/PARAMETERS_ERR" alias = "PARAMETERS_ANS" timeout = "1000">
-    <output>
-        <file path = "ans.txt"/>
-        <terminal hide="true"/>
-    </output>
-</Service>
-
-<Task name = "example_task">
-    <send>
-        <service alias = "PARAMETERS_REQ"/>
-        <command name = "mutli-line-cmd"/>
-        <response print="true"/>
-    </send>
-    <wait till = "response"/>
-    <wait time = "1000"/>
-    <send>
-        <service alias = "PARAMETERS_REQ"/>
-        <command name = "another-cmd"/>
-        <response print="true"/>
-    </send>
-</Task>
-
-<Task name = "example_periodic_task" type = "indefinite" period = "1000">
-    <send>
-        <service alias = "PARAMETERS_REQ"/>
-        <command name = "mutli-line-cmd"/>
-        <response print="true"/>
-    </send>
-</Task>
-
-<Task name = "example_iterative_task" type = "iterative" iterations = "1000">
-    <send>
-        <service alias = "PARAMETERS_REQ"/>
-        <command name = "mutli-line-cmd"/>
-        <response print="true"/>
-    </send>
-</Task>
+</Configuration>

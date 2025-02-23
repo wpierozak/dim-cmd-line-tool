@@ -29,6 +29,17 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# Set the directory for storing all executables
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
+# For multi-config generators
+if(CMAKE_CONFIGURATION_TYPES)
+  foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${CONFIG} CONFIG)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG} ${CMAKE_SOURCE_DIR}/bin)
+  endforeach()
+endif()
+
 # Define Debug and Release build types
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
@@ -38,25 +49,9 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 # Fetch and build googletest
 FetchContent_MakeAvailable(googletest)
 # Include directories
-include_directories(${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/rapid_xml)
+include_directories(${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/rapid_xml ${PROJECT_SOURCE_DIR}/oof)
 file(GLOB_RECURSE PROJECT_SOURCES src/*.cxx src/*.cpp)
-# Enable testing
-enable_testing()
 
-# Local test
-add_executable(local-test tests/local/main.cxx ${PROJECT_SOURCES})
-target_link_libraries(local-test dim pthread)
-target_include_directories(local-test PRIVATE ${PROJECT_SOURCE_DIR}/inc)
-target_include_directories(local-test PRIVATE ${PROJECT_SOURCE_DIR}/oof)
-target_include_directories(local-test PRIVATE ${PROJECT_SOURCE_DIR}/rapid_xml)
-# Add test executable
-file(GLOB_RECURSE TEST_SOURCES tests/*.cxx tests/*.cpp)
-#add_executable(run_google_tests ${TEST_SOURCES} ${PROJECT_SOURCES})
-
-# Link test executable against gtest and gtest_main
-#target_link_libraries(run_google_tests gtest gtest_main)
-#target_include_directories(run_google_tests PRIVATE ${PROJECT_SOURCE_DIR}/inc)
-#target_include_directories(run_google_tests PRIVATE ${PROJECT_SOURCE_DIR}/oof)
-
-# Add tests
-#add_test(NAME GOOGLE_TESTS COMMAND run_google_tests)
+# run-sub
+add_executable(run-sub tools/run-sub.cxx ${PROJECT_SOURCES})
+target_link_libraries(run-sub dim pthread)

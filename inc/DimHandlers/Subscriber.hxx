@@ -153,5 +153,7 @@ private:
     std::optional<std::ofstream> m_file;
     std::optional<uint32_t> m_timeout;
     bool m_hideTerminal = false;
+
+    uint32_t m_bufferedDataLimit{1024};
 };
 } // namespace dim_handlers

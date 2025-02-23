@@ -1,4 +1,0 @@
-[service]
-id.name = "FRED/TCM/TCM0/PARAMETERS_REQ"
-id.alias = "FRED_REQ"
-commands = []

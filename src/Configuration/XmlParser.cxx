@@ -66,11 +66,17 @@ void XmlParser::createCommandSender(const ServiceInfo& serviceInfo)
         {
             if (cmd.command)
             {
-                dim_handlers::DimManager::Instance().addCommand(serviceInfo.name, cmd.name, *cmd.command);
+                auto res = dim_handlers::DimManager::Instance().addCommand(serviceInfo.name, cmd.name, *cmd.command);
+                if(res.isError()){
+                    throw std::runtime_error(res.error.value());
+                }
             }
             else if (cmd.file)
             {
-                dim_handlers::DimManager::Instance().addCommandFromFile(serviceInfo.name, cmd.name, *cmd.file);
+                auto res = dim_handlers::DimManager::Instance().addCommandFromFile(serviceInfo.name, cmd.name, *cmd.file);
+                if(res.isError()){
+                    throw std::runtime_error(res.error.value());
+                }
             }
         }
         if (serviceInfo.responseOn)

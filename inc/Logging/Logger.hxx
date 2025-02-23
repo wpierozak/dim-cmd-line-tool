@@ -69,6 +69,10 @@ public:
         m_logFile = std::make_unique<FileStream>(fileName);
         return m_logFile->isOpen();
     }
+    ~Logger()
+    {
+        (*this)(WARNING) << "Destroying Logger instance\n";
+    }
 
 private:
     Log operator()(StreamMonitor& stream, Mode mode, std::string_view service);

@@ -34,6 +34,10 @@ bool Subscriber::saveToFile(const std::string& output)
 bool Subscriber::handleNewData(const std::string &data)
 {
     m_serviceData.emplace_front(data);
+    if(m_serviceData.size() > m_bufferedDataLimit){
+        m_serviceData.pop_back();
+    }
+    
     if(!saveToFile(data)){
         LOG_SERVICE(ERROR) << "File update failed!";
     }
