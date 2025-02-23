@@ -1,4 +1,3 @@
-#define OOF_IMPL
 #include<Logging/Logger.hxx>
 
 Logger Logger::Instance = Logger();
