@@ -8,23 +8,25 @@ namespace dim_handlers
 
 DimManager DimManager::s_Instance = DimManager();
 
-utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& name, const std::string& alias, Subscriber::Type type, std::optional<uint32_t> timeout)
+utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& name, std::optional<std::string> alias, Subscriber::Type type, std::optional<uint32_t> timeout)
 {
     if(m_subscribersByName.find(name) != m_subscribersByName.end()){
         LOG(ERROR) << "Subscriber to " << name << " already exists.";
         return {.result=false,.error="Subscriber of that name already exists."};
     }
-    if(m_subscribersByAlias.find(alias) != m_subscribersByAlias.end()){
-        LOG(ERROR) << "Subscriber of alias: '" << alias << "' already exists";
-        return {.result=false,.error="Subscriber of that alias already exists."};
+    if(alias.has_value()){
+        if(m_subscribersByAlias.find(alias.value()) != m_subscribersByAlias.end()){
+            LOG(ERROR) << "Subscriber of alias: '" << *alias << "' already exists";
+            return {.result=false,.error="Subscriber of that alias already exists."};
+        }
     }
 
     std::shared_ptr<Subscriber> subscriber;
     if(type == Subscriber::Type::ServiceInfo){
-        LOG(DEBUG) << "Creating ServiceInfo subscriber with name: " << name << " and alias: " << alias;
+        LOG(DEBUG) << "Creating ServiceInfo subscriber with name: " << name << " and alias: " << *alias;
         subscriber = std::make_shared<ServiceInfo>(name, alias, timeout);
     }else if(type == Subscriber::Type::RpcInfo){
-        LOG(DEBUG) << "Creating RpcInfo subscriber with name: " << name << " and alias: " << alias;
+        LOG(DEBUG) << "Creating RpcInfo subscriber with name: " << name << " and alias: " << *alias;
         if(timeout.has_value()){
             subscriber = std::make_shared<RpcInfo>(name, alias,timeout.value());
         }
@@ -36,8 +38,12 @@ utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& 
     }
 
     m_subscribersByName[name] = subscriber;
-    m_subscribersByAlias[alias] = subscriber;
-    LOG(DEBUG) << "Subscriber '" << name << "' with alias '" << alias << "' successfully initialized";
+    if(alias.has_value()){
+        m_subscribersByAlias[alias.value()] = subscriber;
+        LOG(DEBUG) << "Subscriber to '" << name << "' with alias '" << *alias << "' successfully initialized";
+    }else{
+        LOG(DEBUG) << "Subscriber to '" << name << "' successfully initialized";
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     LOG(DEBUG) << "Clearing start-up data for subscriber '" << name << "'";
@@ -46,7 +52,7 @@ utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& 
     return {.result=true};
 }
 
-utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& service, const std::string& alias, const std::string& file, Subscriber::Type type, std::optional<uint32_t> timeout)
+utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& service, std::optional<std::string> alias, const std::string& file, Subscriber::Type type, std::optional<uint32_t> timeout)
 {
     auto creationRes = createSubscriber(service,alias,type,timeout);
     if(creationRes.isError()){
@@ -59,18 +65,22 @@ utils::Result<bool,std::string> DimManager::createSubscriber(const std::string& 
     return {.result=true};
 }
 
-utils::Result<bool,std::string> DimManager::createCommandSender(const std::string& service, const std::string& alias)
+utils::Result<bool,std::string> DimManager::createCommandSender(const std::string& service, std::optional<std::string> alias)
 {
     if(m_commandSendersByName.find(service) != m_commandSendersByName.end()){
         return {.result=false,.error="Command sender of that name already exists."};
     }
-    if(m_commandSendersByAlias.find(alias) != m_commandSendersByAlias.end()){
-        return {.result=false,.error="Command sender of that alias already exists."};
+    if(alias.has_value()){
+        if(m_commandSendersByAlias.find(*alias) != m_commandSendersByAlias.end()){
+            return {.result=false,.error="Command sender of that alias already exists."};
+        }
     }
 
     std::shared_ptr<CommandSender> commandSender = std::make_shared<CommandSender>(service, alias);
     m_commandSendersByName[service] = commandSender;
-    m_commandSendersByAlias[alias] = commandSender;
+    if(alias.has_value()){
+        m_commandSendersByAlias[*alias] = commandSender;
+    }
     return {.result=true};
 }
 

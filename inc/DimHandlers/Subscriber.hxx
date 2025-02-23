@@ -26,7 +26,7 @@ public:
  * @param type The type of the subscriber.
  * @param timeout Optional timeout value in milliseconds. Default is std::nullopt.
  */
-    Subscriber(std::string name, std::string alias, Type type, std::optional<uint32_t> timeout = std::nullopt)
+    Subscriber(std::string name, std::optional<std::string> alias, Type type, std::optional<uint32_t> timeout = std::nullopt)
         : Service(name, alias, type), m_timeout(timeout) {
             
         }

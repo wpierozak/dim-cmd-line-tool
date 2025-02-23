@@ -19,10 +19,10 @@ public:
         return s_Instance;
     }
 
-    utils::Result<bool,std::string> createSubscriber(const std::string& service, const std::string& alias, Subscriber::Type type, std::optional<uint32_t> timeout=1000);
-    utils::Result<bool,std::string> createSubscriber(const std::string& service, const std::string& alias, const std::string& file, Subscriber::Type type, std::optional<uint32_t> timeout=1000);
+    utils::Result<bool,std::string> createSubscriber(const std::string& service, std::optional<std::string> alias, Subscriber::Type type, std::optional<uint32_t> timeout=1000);
+    utils::Result<bool,std::string> createSubscriber(const std::string& service, std::optional<std::string> alias, const std::string& file, Subscriber::Type type, std::optional<uint32_t> timeout=1000);
     
-    utils::Result<bool,std::string> createCommandSender(const std::string& service, const std::string& alias);
+    utils::Result<bool,std::string> createCommandSender(const std::string& service, std::optional<std::string>);
     utils::Result<bool,std::string> addCommand(const std::string& commandSender, const std::string& commandName, const std::string& commandText);
     utils::Result<bool,std::string> addCommandFromFile(const std::string& commandSender, const std::string& commandName, const std::string& fileName);
 

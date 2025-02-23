@@ -8,12 +8,12 @@ namespace dim_handlers
 class RpcInfo: public Subscriber, public DimRpcInfo
 {
 public:
-    RpcInfo(std::string name, std::string alias)
+    RpcInfo(std::string name, std::optional<std::string> alias)
         : Subscriber(name, alias, Type::RpcInfo), 
         DimRpcInfo(const_cast<char*>(name.c_str()), const_cast<char*>(RpcInfo::RPC_NO_LINK.data())) 
         {}
 
-    RpcInfo(std::string name, std::string alias, uint32_t timeout)
+    RpcInfo(std::string name, std::optional<std::string> alias, uint32_t timeout)
         : Subscriber(name, alias, Type::RpcInfo, timeout), 
         DimRpcInfo(const_cast<char*>(name.c_str()), timeout, const_cast<char*>(RpcInfo::RPC_NO_LINK.data())) 
         {}

@@ -14,7 +14,7 @@ namespace dim_handlers
 class CommandSender: public Service
 {
 public:
-    CommandSender(std::string name, std::string alias)
+    CommandSender(std::string name, std::optional<std::string> alias)
         : Service(name, alias, Type::Command)
     {}
 

@@ -1,3 +1,6 @@
 [submodule "oof"]
 	path = oof
 	url = https://github.com/s9w/oof.git
+[submodule "FTXUI"]
+	path = FTXUI
+	url = https://github.com/ArthurSonzogni/FTXUI.git

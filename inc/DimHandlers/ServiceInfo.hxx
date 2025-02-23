@@ -9,7 +9,7 @@ namespace dim_handlers
 class ServiceInfo: public Subscriber, public DimInfo
 {
 public:
-    ServiceInfo(std::string name, std::string alias, std::optional<uint32_t> timeout = std::nullopt)
+    ServiceInfo(std::string name, std::optional<std::string> alias, std::optional<uint32_t> timeout = std::nullopt)
         : Subscriber(name, alias, Type::ServiceInfo, timeout), DimInfo(const_cast<char*>(name.c_str()), const_cast<char*>(SERVICE_NO_LINK.data())){}
 
 
