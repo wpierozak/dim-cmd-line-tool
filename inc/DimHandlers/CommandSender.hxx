@@ -45,6 +45,16 @@ public:
     {
         return m_responseServices;
     }
+
+    std::list<std::string> getCommands()
+    {
+        std::list<std::string> commands;
+        for(auto [name,cmd]: m_commands)
+        {
+            commands.push_back(name);
+        }
+        return commands;
+    }
    
 private:
     std::map<std::string, std::string> m_commands;

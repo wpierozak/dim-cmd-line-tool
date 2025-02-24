@@ -32,6 +32,10 @@ public:
     utils::Result<std::string,std::string> executeCommand(const std::string& service, const std::string& command, bool waitForResponse=false);
     utils::Result<std::string,std::string> getServiceData(const std::string& service, bool getImmediateData = false);
 
+    std::list<std::string> getCommandSenders();
+    std::list<std::string> getSubscribers();
+    std::list<std::string> getCommands(const std::string& service);
+
 private:
     DimManager() = default;
     utils::Result<std::string,std::string> waitForData(const std::string& commandService);

@@ -2,6 +2,7 @@
 
 #include<Logging/Logger.hxx>
 #include<string>
+#include<list>
 
 #define LOG_SERVICE(mode) Logger::Get()(mode,Service::getName())
 #define LOG_SERVICE_DATA(data) Logger::Get().printServiceData(Service::getName(), data);

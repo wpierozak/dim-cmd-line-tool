@@ -212,4 +212,31 @@ utils::Result<std::string,std::string> DimManager::getServiceData(const std::str
     return {.result = data};
 }
 
+std::list<std::string> DimManager::getCommandSenders()
+{
+    std::list<std::string> list;
+    for(auto [name,ptr]: m_commandSendersByName){
+        list.push_back(name);
+    }
+    return list;
+}
+
+std::list<std::string> DimManager::getSubscribers()
+{
+    std::list<std::string> list;
+    for(auto [name,ptr]: m_subscribersByName){
+        list.push_back(name);
+    }
+    return list;
+}
+
+std::list<std::string> DimManager::getCommands(const std::string& service)
+{
+    if(m_commandSendersByName.find(service) == m_commandSendersByName.end()){
+        return std::list<std::string>();
+    }
+    auto cmdSender = m_commandSendersByName.find(service)->second;
+    return cmdSender->getCommands();
+}
+
 }
