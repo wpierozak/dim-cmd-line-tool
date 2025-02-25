@@ -198,7 +198,6 @@ utils::Result<std::string,std::string> DimManager::getServiceData(const std::str
     if(getImmediateData){
         auto data = m_subscribersByName[service]->getData();
         if(data.has_value()){
-            m_subscribersByName[service]->popFront();
             return {.result=data.value()};
         }
         return {.error="No data available."};
@@ -208,7 +207,6 @@ utils::Result<std::string,std::string> DimManager::getServiceData(const std::str
     if(data == std::nullopt){
         return {.error="No data received."};
     }
-    m_subscribersByName[service]->popFront();
     return {.result = data};
 }
 
