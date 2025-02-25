@@ -56,10 +56,6 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 include_directories(${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/rapid_xml ${PROJECT_SOURCE_DIR}/oof)
 file(GLOB_RECURSE PROJECT_SOURCES src/*.cxx src/*.cpp)
 
-# run-sub
-add_executable(run-sub tools/run-sub.cxx ${PROJECT_SOURCES})
-target_link_libraries(run-sub dim pthread)
-
 add_executable(dcu ${PROJECT_SOURCE_DIR}/tools/dcu.cxx ${PROJECT_SOURCES})
 target_link_libraries(dcu
   PRIVATE dim
