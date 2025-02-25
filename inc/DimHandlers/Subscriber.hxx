@@ -154,6 +154,6 @@ private:
     std::optional<uint32_t> m_timeout;
     bool m_hideTerminal = false;
 
-    uint32_t m_bufferedDataLimit{1024};
+    uint32_t m_bufferedDataLimit{2};
 };
 } // namespace dim_handlers

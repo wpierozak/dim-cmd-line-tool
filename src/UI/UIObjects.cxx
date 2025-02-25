@@ -47,7 +47,7 @@ void updateCommandsMenu()
           std::back_inserter(commandMenuContent),[&](const std::string& command){return command;});
         commandMenuContent.push_back(ui::menu::commands::SEND_CMD_INPUT.data());
       }
-    }   
+    }
 }
 
 }

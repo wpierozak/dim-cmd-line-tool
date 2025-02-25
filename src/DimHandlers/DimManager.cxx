@@ -134,8 +134,10 @@ utils::Result<std::string,std::string> DimManager::executeCommand(const std::str
         m_commandSendersByName[service]->sendCommand(command);
         return waitForData(service);
     }
-    m_commandSendersByName[service]->sendCommand(command);
-    return {.result="Command sent."};
+    if(m_commandSendersByName[service]->sendCommand(command)){
+        return {.result="Command sent."};
+    }
+    return {.error = "Failed to send command"};
 }
 
 utils::Result<std::string,std::string> DimManager::waitForData(const std::string& commandService)

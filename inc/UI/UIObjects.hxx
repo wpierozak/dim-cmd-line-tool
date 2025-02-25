@@ -15,6 +15,7 @@ void updateCommandsMenu();
 
 extern ui::types::Input input;
 
+
 extern std::optional<ui::types::Command> command; 
 }
 }

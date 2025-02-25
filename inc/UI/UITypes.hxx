@@ -38,7 +38,7 @@ namespace types
         std::string content;
         ftxui::Component component;
     };
-    
+
     class MultiLineText
     {
         public:
@@ -78,46 +78,53 @@ namespace types
 
         }
 
-        State state(){ return m_state;}
+        State state(){ std::lock_guard lock(m_mutex); return m_state;}
 
         void moveReady(const std::string& command)
         {
+            std::lock_guard lock(m_mutex);
             m_command = command;
         }
 
         void moveWaiting()
         {
             m_state = State::Waiting;
-            std::thread task([&]{
+            
                 utils::Result<std::string,std::string> res;
                 if(type == Type::Input){
-                    res = DIM_MANAGER.executeCommand(m_commandSender,m_commandSender,true);
+                    res = DIM_MANAGER.executeCommand(m_commandSender,m_command,true);
                 } else{
-                    res = DIM_MANAGER.executeKnownCommand(m_commandSender,m_commandSender,true);
+                    res = DIM_MANAGER.executeKnownCommand(m_commandSender,m_command,true);
                 }
                 if(res.isError()){
+                    std::lock_guard lock(m_mutex);
                     m_state = State::Failure;
                     m_errorMessage = res.error.value_or("");
                 } else{
+                    std::lock_guard lock(m_mutex);
                     m_state = State::Finished;
                     m_response = res.result.value_or("");
                 }
-            });
+            
         }
 
         void moveFinished()
         {
             utils::Result<std::string,std::string> res;
+            LOG(INFO) << "EXECUTING";
             if(type == Type::Input){
-                res = DIM_MANAGER.executeCommand(m_commandSender,m_commandSender,false);
+                res = DIM_MANAGER.executeCommand(m_commandSender,m_command,false);
             } else{
-                res = DIM_MANAGER.executeKnownCommand(m_commandSender,m_commandSender,false);
+                res = DIM_MANAGER.executeKnownCommand(m_commandSender,m_command,false);
             }
             if(res.isError()){
+                std::lock_guard lock(m_mutex);
                 m_state = State::Failure;
                 m_errorMessage = res.error.value_or("Failed to executed command");
             } else{
+                std::lock_guard lock(m_mutex);
                 m_state = State::Finished;
+                m_response = res.result;
             }
         }
 
@@ -133,9 +140,9 @@ namespace types
 
         const Type type;
         private:
-        
+        std::mutex m_mutex;
         State m_state;
-        const std::string m_commandSender;
+        std::string m_commandSender;
         std::string m_command;
 
         std::optional<std::string> m_response;

@@ -13,5 +13,11 @@ private:
     ui::types::MultiLineText getOutput();
     std::string getServiceInfo(const std::string& name);
     std::string getLogs();
+    void updateCommand();
+    void enterClicked();
+
+    int m_lastMainSelected;
+    int m_lastServiceSelected;
+    int m_lastCommandSelected;
 };
 }
