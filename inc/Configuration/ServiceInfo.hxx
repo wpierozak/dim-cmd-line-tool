@@ -1,49 +1,43 @@
 #pragma once
-#include<rapidxml.hpp>
-#include<string>
-#include<optional>
-#include<list>
-#include<string_view>
+#include <list>
+#include <optional>
+#include <rapidxml.hpp>
+#include <string>
+#include <string_view>
 
-namespace config
-{
-    struct ServiceInfo
-    {
-        struct Output
-        {
-            Output(rapidxml::xml_node<>* node);
-            std::string filename;
-        };
+namespace config {
+struct ServiceInfo {
+  struct Output {
+    Output(rapidxml::xml_node<> *node);
+    std::string filename;
+  };
 
-        struct Command
-        {
-            Command(rapidxml::xml_node<>* node);
+  struct Command {
+    Command(rapidxml::xml_node<> *node);
 
-            std::string name;
-            std::optional<std::string> command;
-            std::optional<std::string> file;
-        };
+    std::string name;
+    std::optional<std::string> command;
+    std::optional<std::string> file;
+  };
 
-        struct Commands
-        {
-            Commands(rapidxml::xml_node<>* node);
-            std::list<Command> commands;
-        };
+  struct Commands {
+    Commands(rapidxml::xml_node<> *node);
+    std::list<Command> commands;
+  };
 
-        struct ResponseOn
-        {
-            std::list<std::string> services;
-        };
+  struct ResponseOn {
+    std::list<std::string> services;
+  };
 
-        ServiceInfo(rapidxml::xml_node<>* node);
+  ServiceInfo(rapidxml::xml_node<> *node);
 
-        std::string name;
-        std::optional<std::string> alias;
-        std::string type;
-        std::optional<uint32_t> timeout;
+  std::string name;
+  std::optional<std::string> alias;
+  std::string type;
+  std::optional<uint32_t> timeout;
 
-        std::optional<Output> output;
-        std::list<Command> commands;
-        std::optional<ResponseOn> responseOn;
-    };
-}
+  std::optional<Output> output;
+  std::list<Command> commands;
+  std::optional<ResponseOn> responseOn;
+};
+} // namespace config

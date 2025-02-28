@@ -1,24 +1,22 @@
 // filepath: /home/wiktor/dim-cmd-line-tool/inc/UI/UI.hxx
 #pragma once
-#include"UIObjects.hxx"
-#include"UITools.hxx"
+#include "UIObjects.hxx"
+#include "UITools.hxx"
 
-namespace ui
-{
-class Manager
-{
+namespace ui {
+class Manager {
 public:
-    void runUI();
+  void runUI();
+
 private:
+  ui::types::MultiLineText getOutput();
+  std::string getServiceInfo(const std::string &name);
+  std::string getLogs();
+  void updateCommand();
+  void enterClicked();
 
-    ui::types::MultiLineText getOutput();
-    std::string getServiceInfo(const std::string& name);
-    std::string getLogs();
-    void updateCommand();
-    void enterClicked();
-
-    int m_lastMainSelected;
-    int m_lastServiceSelected;
-    int m_lastCommandSelected;
+  int m_lastMainSelected;
+  int m_lastServiceSelected;
+  int m_lastCommandSelected;
 };
-}
+} // namespace ui

@@ -1,9 +1,5 @@
-namespace config
-{
+namespace config {
 
-class Manager
-{
+class Manager {};
 
-};
-    
 } // namespace config

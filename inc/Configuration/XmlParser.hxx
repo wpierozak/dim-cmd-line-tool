@@ -1,24 +1,24 @@
 #pragma once
 
-#include <string>
 #include <fstream>
-#include <sstream>
-#include <vector>
 #include <iostream>
 #include <optional>
-#include"ServiceInfo.hxx"
+#include <sstream>
+#include <string>
+#include <vector>
 
-namespace config
-{
+#include "ServiceInfo.hxx"
 
-class XmlParser
-{
+namespace config {
+
+class XmlParser {
 public:
-    bool load(std::string configFile);
+  bool load(std::string configFile);
+
 private:
-    void populateDimManager(std::string configPath);
-    void createCommandSender(const config::ServiceInfo& service);
-    void createSubscriber(const config::ServiceInfo& service);
+  void populateDimManager(std::string configPath);
+  void createCommandSender(const config::ServiceInfo &service);
+  void createSubscriber(const config::ServiceInfo &service);
 };
 
 } // namespace config

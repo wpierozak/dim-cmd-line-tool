@@ -1,152 +1,106 @@
 #pragma once
-#include <functional>  // for function
-#include <memory>      // for shared_ptr, allocator, __shared_ptr_access
-#include <string>      // for string, basic_string
-#include <vector>      // for vector
- 
-#include "ftxui/component/captured_mouse.hpp"  // for ftxui
-#include "ftxui/component/component.hpp"  // for Slider, Checkbox, Vertical, Renderer, Button, Input, Menu, Radiobox, Toggle
-#include "ftxui/component/component_base.hpp"  // for ComponentBase
-#include "ftxui/component/screen_interactive.hpp"  // for Component, ScreenInteractive
-#include "ftxui/dom/elements.hpp"  // for separator, operator|, Element, size, xflex, text, WIDTH, hbox, vbox, EQUAL, border, GREATER_THAN
- 
-#include"UITools.hxx"
-#include<DimHandlers/DimManager.hxx>
+#include <DimHandlers/DimManager.hxx>
+#include <functional> // for function
+#include <memory>     // for shared_ptr, allocator, __shared_ptr_access
+#include <string>     // for string, basic_string
+#include <vector>     // for vector
 
-namespace ui
-{
-namespace types
-{
-    struct Menu
-    {
-      Menu()
-      {
-        component = ftxui::Menu(&entries, &selected);
-      }
-  
-      std::vector<std::string> entries;
-      int selected;
-      ftxui::Component component;
-    };
+#include "UINotification.hxx"
+#include "UITools.hxx"
+#include "ftxui/component/captured_mouse.hpp" // for ftxui
+#include "ftxui/component/component.hpp" // for Slider, Checkbox, Vertical, Renderer, Button, Input, Menu, Radiobox, Toggle
+#include "ftxui/component/component_base.hpp" // for ComponentBase
+#include "ftxui/component/screen_interactive.hpp" // for Component, ScreenInteractive
+#include "ftxui/dom/elements.hpp" // for separator, operator|, Element, size, xflex, text, WIDTH, hbox, vbox, EQUAL, border, GREATER_THAN
 
-    struct Input
-    {
-        Input()
-        {
-            component = tools::Wrap("Input", ftxui::Input(&content,""));
-        }
-        std::string content;
-        ftxui::Component component;
-    };
+namespace ui {
+namespace types {
+class Root : public notify::Publisher {
+public:
+  Root() : Node("ROOT"), Publisher("ROOT") {}
+  void evaluateState() override {
+    m_counter++;
+    updateState(std::optional<std::string>(std::to_string(m_counter)));
+  }
 
-    class MultiLineText
-    {
-        public:
-        MultiLineText(const std::string& text, size_t lines = std::string::npos)
-        {
-            if(lines == std::string::npos){
-                m_lines = tools::split_string_by_newline(text);
-            }else{
-                m_lines = tools::get_last_n_lines(text, lines);
-            }
-        }
+private:
+  uint64_t m_counter{0};
+};
 
-        ftxui::Element Render()
-        {
-            ftxui::Elements elements;
-            for (const auto& line : m_lines) {
-                elements.push_back(ftxui::paragraph(line));
-              }
-            return ftxui::vbox(elements);
-        }
+class Menu : public notify::Publisher, public notify::Subscriber {
+public:
+  Menu(const std::string &ID,
+       std::function<std::vector<std::string>(const std::string &)>
+           entriesSources_)
+      : Node(ID), Publisher(ID), Subscriber(ID),
+        m_entriesSource(entriesSources_) {
+    m_component = ftxui::Menu(&m_entries, &m_selected);
+  }
 
-        private:
-        std::vector<std::string> m_lines;
+  void evaluateState() override;
+  void notify(std::string publisher,
+              std::optional<std::string> context) override;
+  ftxui::Component &component() { return m_component; }
 
-    };
+  int selected() const { return m_selected; }
+  std::string option() const { return m_entries[m_selected]; }
 
-    class Command
-    {
-        public:
-        enum class State{Active,Ready,Waiting,Finished,Failure};
-        enum class Type{Known, Input};
+private:
+  void updateEntries(std::string context);
 
-        Command(const std::string& cmdSender, Type type_): 
-            type(type_), m_state(State::Ready),
-            m_commandSender(cmdSender)
-        {
+  std::vector<std::string> m_entries;
+  int m_selected;
 
-        }
+  std::function<std::vector<std::string>(const std::string &)> m_entriesSource;
+  ftxui::Component m_component;
+};
 
-        State state(){ std::lock_guard lock(m_mutex); return m_state;}
+struct Input {
+  Input() { component = tools::Wrap("Input", ftxui::Input(&content, "")); }
+  std::string content;
+  ftxui::Component component;
+};
 
-        void moveReady(const std::string& command)
-        {
-            std::lock_guard lock(m_mutex);
-            m_command = command;
-        }
+class MultiLineText {
+public:
+  MultiLineText(const std::string &text, size_t lines = std::string::npos);
+  ftxui::Element Render();
 
-        void moveWaiting()
-        {
-            m_state = State::Waiting;
-            
-                utils::Result<std::string,std::string> res;
-                if(type == Type::Input){
-                    res = DIM_MANAGER.executeCommand(m_commandSender,m_command,true);
-                } else{
-                    res = DIM_MANAGER.executeKnownCommand(m_commandSender,m_command,true);
-                }
-                if(res.isError()){
-                    std::lock_guard lock(m_mutex);
-                    m_state = State::Failure;
-                    m_errorMessage = res.error.value_or("");
-                } else{
-                    std::lock_guard lock(m_mutex);
-                    m_state = State::Finished;
-                    m_response = res.result.value_or("");
-                }
-            
-        }
+private:
+  std::vector<std::string> m_lines;
+};
 
-        void moveFinished()
-        {
-            utils::Result<std::string,std::string> res;
-            LOG(INFO) << "EXECUTING";
-            if(type == Type::Input){
-                res = DIM_MANAGER.executeCommand(m_commandSender,m_command,false);
-            } else{
-                res = DIM_MANAGER.executeKnownCommand(m_commandSender,m_command,false);
-            }
-            if(res.isError()){
-                std::lock_guard lock(m_mutex);
-                m_state = State::Failure;
-                m_errorMessage = res.error.value_or("Failed to executed command");
-            } else{
-                std::lock_guard lock(m_mutex);
-                m_state = State::Finished;
-                m_response = res.result;
-            }
-        }
+class Command {
+public:
+  enum class State { Active, Ready, Waiting, Finished, Failure };
+  enum class Type { Known, Input };
 
-        std::optional<std::string> response()
-        {
-            return m_response;
-        }
+  Command(const std::string &cmdSender, Type type_)
+      : type(type_), m_state(State::Ready), m_commandSender(cmdSender) {}
 
-        std::optional<std::string> error()
-        {
-            return m_errorMessage;
-        }
+  State state() {
+    std::lock_guard lock(m_mutex);
+    return m_state;
+  }
 
-        const Type type;
-        private:
-        std::mutex m_mutex;
-        State m_state;
-        std::string m_commandSender;
-        std::string m_command;
+  void moveReady(const std::string &command);
+  void moveWaiting();
+  void moveFinished();
 
-        std::optional<std::string> m_response;
-        std::optional<std::string> m_errorMessage;
-    };
-}
-}
+  std::optional<std::string> response() { return m_response; }
+
+  std::optional<std::string> error() { return m_errorMessage; }
+
+  const Type type;
+
+private:
+  std::mutex m_mutex;
+  State m_state;
+  std::string m_commandSender;
+  std::string m_command;
+
+  std::optional<std::string> m_response;
+  std::optional<std::string> m_errorMessage;
+};
+} // namespace types
+} // namespace ui
