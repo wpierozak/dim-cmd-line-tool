@@ -9,6 +9,8 @@ std::shared_ptr<ui::types::Menu> serviceMenu =
 std::shared_ptr<ui::types::Menu> commandsMenu =
     std::make_shared<ui::types::Menu>("COMMANDS_MENU", getCommandsMenuEntries);
 
+std::shared_ptr<ui::types::MessageBox> messageBox = std::make_shared<ui::types::MessageBox>("MessageBox");
+
 ui::types::Input input = ui::types::Input();
 
 std::vector<std::string> getMainMenuEntries(const std::string &context) {

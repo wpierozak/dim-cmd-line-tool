@@ -4,9 +4,11 @@ namespace ui {
 void Manager::runUI() {
   ui::types::Root root;
   root.subscribe(ui::objects::mainMenu);
+  root.subscribe(ui::objects::messageBox);
+
   ui::objects::mainMenu->subscribe(ui::objects::serviceMenu);
   ui::objects::serviceMenu->subscribe(ui::objects::commandsMenu);
-
+  
   // ui::objects::mainMenu->updateEntries();
   auto button = ftxui::Button("Enter", [&] { enterClicked(); });
   auto screen = ftxui::ScreenInteractive::FitComponent();
@@ -31,7 +33,7 @@ void Manager::runUI() {
          ftxui::hbox({ui::objects::input.component->Render(),
                       ftxui::separator(), button->Render()}) |
              ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 100) | ftxui::border,
-         output.Render() | ftxui::border
+         ui::objects::messageBox->Render() | ftxui::border
 
         });
   });
@@ -40,15 +42,20 @@ void Manager::runUI() {
   std::thread refresh_ui([&] {
     while (refresh_ui_continue) {
       using namespace std::chrono_literals;
-      std::this_thread::sleep_for(0.1s);
+      std::this_thread::sleep_for(0.01s);
 
       // After updating the state, request a new frame to be drawn. This is done
       // by simulating a new "custom" event to be handled.
       screen.Post(ftxui::Event::Custom);
     }
   });
-
+  try{
   screen.Loop(component);
+  }
+  catch(std::exception& e)
+  {
+    
+  }
   refresh_ui_continue = false;
   refresh_ui.join();
 }

@@ -44,6 +44,7 @@ public:
 
   int selected() const { return m_selected; }
   std::string option() const { return m_entries[m_selected]; }
+  opt_str nullableOption() const {return (m_selected != -1) ? opt_str(m_entries[m_selected]) : std::nullopt;}
 
 private:
   void updateEntries(std::string context);
@@ -62,13 +63,32 @@ struct Input {
 };
 
 class MultiLineText {
-public:
-  MultiLineText(const std::string &text, size_t lines = std::string::npos);
-  ftxui::Element Render();
+  public:
+    MultiLineText() = default;
+    MultiLineText(const std::string &text, size_t lines = std::string::npos);
+    ftxui::Element Render();
+  
+  private:
+    std::vector<std::string> m_lines;
+  };
 
+class MessageBox: public notify::Subscriber
+{
+public:
+  MessageBox(const std::string ID): Node(ID), Subscriber(ID) {}
+
+  void notify(std::string publisher, std::optional<std::string> context) override;
+  void evaluateState();
+  ftxui::Element Render();
 private:
-  std::vector<std::string> m_lines;
+  void printLogs();
+  void printLatestData();
+  void printCommand();
+
+  MultiLineText m_content;
 };
+
+
 
 class Command {
 public:

@@ -1,20 +1,21 @@
 #include <UI/UITypes.hxx>
+#include<UI/UIObjects.hxx>
+#include<UI/UIMenuContent.hxx>
 
 namespace ui {
 namespace types {
 void Menu::evaluateState() {
-  //LOG(DEBUG) << "Menu: " << identity() << " - evaluating state";
   if (m_entries.empty()) {
-    //LOG(DEBUG) << "Menu " << identity() << " - empty entries vector";
     updateState(std::nullopt);
     return;
+  }
+  if(m_selected == -1){
+    m_selected  = 0;
   }
   updateState(m_entries[m_selected]);
 }
 
 void Menu::notify(std::string publisher, std::optional<std::string> state) {
-  //LOG(DEBUG) << "Menu " << identity() << " - notified by " << publisher
-    //         << " of state " << state.value_or("<NO STATE>");
   if (state.has_value()) {
     updateEntries(state.value());
   } else if (m_entries.empty() == false) {
@@ -26,6 +27,44 @@ void Menu::notify(std::string publisher, std::optional<std::string> state) {
 
 void Menu::updateEntries(std::string context) {
   m_entries = m_entriesSource(context);
+}
+
+void MessageBox::notify(std::string publisher, std::optional<std::string> context)
+{
+  evaluateState();
+}
+
+void MessageBox::evaluateState()
+{
+  if(ui::objects::mainMenu->nullableOption() == menu::main::LOGS){
+    printLogs();
+  } else if(ui::objects::mainMenu->nullableOption() == menu::main::PRINT_LATEST_DATA){
+    printLatestData();
+  }
+}
+
+void MessageBox::printLogs(){
+  m_content = MultiLineText(Logger::Get().getQuietLogs());
+}
+
+void MessageBox::printLatestData()
+{
+  opt_str service = ui::objects::serviceMenu->nullableOption();
+  if(service == std::nullopt){
+    m_content = MultiLineText("");
+    return;
+  }
+  auto res = DIM_MANAGER.getServiceData(service.value(),true);
+  if(res.isError()){
+    m_content = MultiLineText(res.error.value());
+    return;
+  }
+  m_content = MultiLineText(res.result.value_or(""));
+}
+
+ftxui::Element MessageBox::Render()
+{
+  return m_content.Render();
 }
 
 MultiLineText::MultiLineText(const std::string &text, size_t lines) {

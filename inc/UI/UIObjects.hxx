@@ -14,6 +14,8 @@ extern std::shared_ptr<ui::types::Menu> commandsMenu;
 std::vector<std::string> getCommandsMenuEntries(const std::string &context);
 void updateCommandsMenu();
 
+extern std::shared_ptr<ui::types::MessageBox> messageBox;
+
 extern ui::types::Input input;
 
 extern std::optional<ui::types::Command> command;
