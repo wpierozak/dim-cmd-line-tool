@@ -18,6 +18,6 @@ extern std::shared_ptr<ui::types::MessageBox> messageBox;
 
 extern ui::types::Input input;
 
-extern std::optional<ui::types::Command> command;
+extern std::shared_ptr<ui::types::Command> command;
 } // namespace objects
 } // namespace ui

@@ -43,7 +43,7 @@ public:
   ftxui::Component &component() { return m_component; }
 
   int selected() const { return m_selected; }
-  std::string option() const { return m_entries[m_selected]; }
+  const std::string& option() const { return m_entries[m_selected]; }
   opt_str nullableOption() const {return (m_selected != -1) ? opt_str(m_entries[m_selected]) : std::nullopt;}
 
 private:
@@ -88,34 +88,53 @@ private:
   MultiLineText m_content;
 };
 
-
-
-class Command {
+class Command: public notify::Subscriber {
 public:
-  enum class State { Active, Ready, Waiting, Finished, Failure };
+  enum class State { Invalid, Active, Ready, Waiting, Finished, Failure };
+  
+  static std::string stateToString(State state) {
+    switch (state) {
+      case State::Invalid:
+        return "Invalid";
+      case State::Active:
+        return "Active";
+      case State::Ready:
+        return "Ready";
+      case State::Waiting:
+        return "Waiting";
+      case State::Finished:
+        return "Finished";
+      case State::Failure:
+        return "Failure";
+      default:
+        return "Unknown";
+    }
+  }
   enum class Type { Known, Input };
 
-  Command(const std::string &cmdSender, Type type_)
-      : type(type_), m_state(State::Ready), m_commandSender(cmdSender) {}
+  Command(const std::string &ID): Node(ID), Subscriber(ID) {}
+  void notify(std::string publisher, opt_str context) override;
 
   State state() {
     std::lock_guard lock(m_mutex);
     return m_state;
   }
 
-  void moveReady(const std::string &command);
-  void moveWaiting();
-  void moveFinished();
+  void executeAndWait();
+  void execute();
+  void setCmd(const std::string& cmd)
+  { 
+    m_command = cmd; 
+    m_state = State::Ready;
+  }
 
   std::optional<std::string> response() { return m_response; }
-
   std::optional<std::string> error() { return m_errorMessage; }
-
-  const Type type;
 
 private:
   std::mutex m_mutex;
   State m_state;
+  Type m_type;
   std::string m_commandSender;
   std::string m_command;
 

@@ -46,6 +46,7 @@ public:
   StreamMonitor &monitor() { return m_monitor; }
 
   StreamMonitor &operator()() { return m_monitor; }
+  const StreamType& stream(){return m_fileStream;}
 
 protected:
   StreamType m_fileStream;

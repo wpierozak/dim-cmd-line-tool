@@ -261,7 +261,7 @@ std::list<std::string> DimManager::getSubscribers() {
 
 std::list<std::string> DimManager::getCommands(const std::string &service) {
   if (m_commandSendersByName.find(service) == m_commandSendersByName.end()) {
-    return std::list<std::string>();
+    return {};
   }
   auto cmdSender = m_commandSendersByName.find(service)->second;
   return cmdSender->getCommands();

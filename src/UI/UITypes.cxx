@@ -10,18 +10,20 @@ void Menu::evaluateState() {
     return;
   }
   if(m_selected == -1){
-    m_selected  = 0;
+    m_selected = 0;
   }
   updateState(m_entries[m_selected]);
 }
 
 void Menu::notify(std::string publisher, std::optional<std::string> state) {
+  
   if (state.has_value()) {
     updateEntries(state.value());
   } else if (m_entries.empty() == false) {
     m_entries.clear();
     m_selected = -1;
   }
+
   evaluateState();
 }
 
@@ -36,15 +38,30 @@ void MessageBox::notify(std::string publisher, std::optional<std::string> contex
 
 void MessageBox::evaluateState()
 {
-  if(ui::objects::mainMenu->nullableOption() == menu::main::LOGS){
-    printLogs();
-  } else if(ui::objects::mainMenu->nullableOption() == menu::main::PRINT_LATEST_DATA){
+  if(ui::objects::mainMenu->option() == menu::main::PRINT_LATEST_DATA){
     printLatestData();
+  } else if(ui::objects::mainMenu->option() == menu::main::LOGS){
+    printLogs();
+  } else if(ui::objects::mainMenu->option() == menu::main::SEND_COMMAND_WAIT){
+    printCommand();
+  } else{
+    m_content = MultiLineText("");
+  }
+}
+
+void MessageBox::printCommand()
+{
+  auto resp = objects::command->response();
+  auto err = objects::command->error();
+  if(resp.has_value()){
+    m_content = MultiLineText(resp.value());
+  } else if(err.has_value()){
+    m_content = MultiLineText(err.value());
   }
 }
 
 void MessageBox::printLogs(){
-  m_content = MultiLineText(Logger::Get().getQuietLogs());
+  m_content = MultiLineText(Logger::Get().getQuietLogs(),3);
 }
 
 void MessageBox::printLatestData()
@@ -82,46 +99,64 @@ ftxui::Element MultiLineText::Render() {
   }
   return ftxui::vbox(elements);
 }
-void Command::moveReady(const std::string &command) {
-  std::lock_guard lock(m_mutex);
-  m_command = command;
+
+void Command::notify(std::string publisher, opt_str context)
+{
+  if(publisher == ui::objects::mainMenu->identity()){
+    if(context != menu::main::SEND_COMMAND && context != menu::main::SEND_COMMAND_WAIT){
+      m_state = State::Invalid;
+    } else{
+      m_state = State::Active;
+    }
+  } else if(publisher == ui::objects::serviceMenu->identity() && m_state != State::Invalid){
+    if(ui::objects::serviceMenu->nullableOption().has_value()){
+      m_commandSender = ui::objects::serviceMenu->option();
+    }
+  } else if(publisher == ui::objects::commandsMenu->identity() && m_state != State::Invalid){
+    if(context == menu::commands::SEND_CMD_INPUT){
+      m_type = Type::Input;
+    } else{
+      m_command = context.value();
+      m_type = Type::Known;
+    }
+    m_state = State::Ready;
+  }
 }
 
-void Command::moveWaiting() {
-  m_state = State::Waiting;
-
+void Command::executeAndWait() {
+  if(m_state == State::Invalid){
+    LOG(ERROR) << "Command is not ready! State: " << stateToString(m_state);
+    return;
+  }
   utils::Result<std::string, std::string> res;
-  if (type == Type::Input) {
+  if (m_type == Type::Input) {
     res = DIM_MANAGER.executeCommand(m_commandSender, m_command, true);
   } else {
     res = DIM_MANAGER.executeKnownCommand(m_commandSender, m_command, true);
   }
   if (res.isError()) {
-    std::lock_guard lock(m_mutex);
-    m_state = State::Failure;
     m_errorMessage = res.error.value_or("");
   } else {
-    std::lock_guard lock(m_mutex);
-    m_state = State::Finished;
     m_response = res.result.value_or("");
   }
 }
 
-void Command::moveFinished() {
+void Command::execute() {
+  if(m_state == State::Invalid){
+    LOG(ERROR) << "Command is not ready! State: " << stateToString(m_state);
+    return;
+  }
+
   utils::Result<std::string, std::string> res;
-  LOG(INFO) << "EXECUTING";
-  if (type == Type::Input) {
+  LOG(INFO) << "Executing command on '" << m_commandSender + "'";
+  if (m_type == Type::Input) {
     res = DIM_MANAGER.executeCommand(m_commandSender, m_command, false);
   } else {
     res = DIM_MANAGER.executeKnownCommand(m_commandSender, m_command, false);
   }
   if (res.isError()) {
-    std::lock_guard lock(m_mutex);
-    m_state = State::Failure;
     m_errorMessage = res.error.value_or("Failed to executed command");
   } else {
-    std::lock_guard lock(m_mutex);
-    m_state = State::Finished;
     m_response = res.result;
   }
 }

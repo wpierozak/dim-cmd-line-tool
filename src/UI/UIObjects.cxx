@@ -20,7 +20,7 @@ std::vector<std::string> getMainMenuEntries(const std::string &context) {
           ui::menu::main::LOGS.data()};
 }
 
-std::optional<ui::types::Command> command = std::nullopt;
+std::shared_ptr<ui::types::Command> command = std::make_shared<types::Command>("COMMAND");
 
 std::vector<std::string> getServiceMenuEntries(const std::string &context) {
   
@@ -44,7 +44,7 @@ std::vector<std::string> getCommandsMenuEntries(const std::string &context) {
   std::vector<std::string> entries;
   auto source = DIM_MANAGER.getCommands(context);
   if(source.empty()){
-    {};
+    return {};
   }
   std::transform(source.begin(), source.end(), std::back_inserter(entries),
                  [](const std::string &entry) { return entry; });

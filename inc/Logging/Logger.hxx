@@ -40,7 +40,7 @@ public:
 
   std::string getQuietLogs() {
     if (isQuiet()) {
-      return m_quietLogs->monitor().str();
+      return m_quietLogs->stream().str();
     }
     return "";
   }

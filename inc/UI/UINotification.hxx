@@ -33,6 +33,7 @@ public:
 
   void subscribe(SubscriberHandle subscriber);
   void unsubscribe(const std::string &subscriber);
+  void updateAlways(bool on) {m_updateAlways = on;}
 
   virtual void evaluateState() = 0;
   virtual ~Publisher() = default;
@@ -45,6 +46,7 @@ protected:
 private:
   std::optional<std::string> m_state;
   std::map<std::string, SubscriberHandle> m_subscribers;
+  bool m_updateAlways{false};
 };
 
 } // namespace notify

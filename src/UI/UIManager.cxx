@@ -7,7 +7,10 @@ void Manager::runUI() {
   root.subscribe(ui::objects::messageBox);
 
   ui::objects::mainMenu->subscribe(ui::objects::serviceMenu);
+  ui::objects::mainMenu->subscribe(ui::objects::command);
   ui::objects::serviceMenu->subscribe(ui::objects::commandsMenu);
+  ui::objects::serviceMenu->subscribe(ui::objects::command);
+  ui::objects::commandsMenu->subscribe(ui::objects::command);
   
   // ui::objects::mainMenu->updateEntries();
   auto button = ftxui::Button("Enter", [&] { enterClicked(); });
@@ -20,8 +23,8 @@ void Manager::runUI() {
 
   auto component = ftxui::Renderer(layout, [&] {
     root.evaluateState();
-
-    auto output = getOutput();
+    ui::objects::serviceMenu->evaluateState();
+    ui::objects::commandsMenu->evaluateState();
 
     return ftxui::vbox(
         {ftxui::hbox({ui::objects::mainMenu->component()->Render(),
@@ -42,7 +45,7 @@ void Manager::runUI() {
   std::thread refresh_ui([&] {
     while (refresh_ui_continue) {
       using namespace std::chrono_literals;
-      std::this_thread::sleep_for(0.01s);
+      std::this_thread::sleep_for(0.1s);
 
       // After updating the state, request a new frame to be drawn. This is done
       // by simulating a new "custom" event to be handled.
@@ -54,42 +57,12 @@ void Manager::runUI() {
   }
   catch(std::exception& e)
   {
-    
+   std::cout << e.what(); 
   }
   refresh_ui_continue = false;
   refresh_ui.join();
 }
 
-ui::types::MultiLineText Manager::getOutput() {
-  // using namespace ui::objects;
-  // if(mainMenu.entries[mainMenu.selected] ==
-  // ui::menu::main::PRINT_LATEST_DATA){
-  //     if(serviceMenu.entries.size() > 0){
-  //         ui::types::MultiLineText
-  //         text(getServiceInfo(serviceMenu.entries[serviceMenu.selected]));
-  //         return text;
-  //     } else return ui::types::MultiLineText("");
-  // } else if(mainMenu.entries[mainMenu.selected] == ui::menu::main::LOGS){
-  //     ui::types::MultiLineText text(getLogs(), 3);
-  //     return text;
-  // }
-
-  // if(ui::objects::command.has_value()){
-  //     if(ui::objects::command->state() ==
-  //     ui::types::Command::State::Finished){
-  //         return
-  //         ui::types::MultiLineText(command->response().value_or("Executed"));
-  //     } else if(ui::objects::command->state() ==
-  //     ui::types::Command::State::Waiting){
-  //         return ui::types::MultiLineText("Waiting...");
-  //     } else if(ui::objects::command->state() ==
-  //     ui::types::Command::State::Failure){
-  //         return ui::types::MultiLineText("Failure!");
-  //     }
-  // }
-
-  return ui::types::MultiLineText(getLogs(), 3);
-}
 
 std::string Manager::getServiceInfo(const std::string &name) {
   auto res = DIM_MANAGER.getServiceData(name, true);
@@ -101,57 +74,20 @@ std::string Manager::getServiceInfo(const std::string &name) {
 
 std::string Manager::getLogs() { return Logger::Get().getQuietLogs(); }
 
-void Manager::updateCommand() {
-  // using namespace ui::objects;
-  // const auto& mainMenuOption = mainMenu.entries[mainMenu.selected];
-  // if(mainMenuOption != ui::menu::main::SEND_COMMAND && mainMenuOption !=
-  // ui::menu::main::SEND_COMMAND_WAIT){
-  //     command = std::nullopt;
-  //     return;
-  // }
-  // if(serviceMenu.entries.size() == 0){
-  //     return;
-  // }
+void Manager::enterClicked() 
+{
+  auto cmdOption = ui::objects::commandsMenu->nullableOption();
+  if(cmdOption == std::nullopt){
+    return;
+  } else if(cmdOption == ui::menu::commands::SEND_CMD_INPUT){
+    ui::objects::command->setCmd(ui::objects::input.content);
+  }
+  if(ui::objects::mainMenu->option() == ui::menu::main::SEND_COMMAND_WAIT){
+    ui::objects::command->executeAndWait();
+  } else if(ui::objects::mainMenu->option() == ui::menu::main::SEND_COMMAND){
+    ui::objects::command->execute();
 
-  // const auto& serviceMenuOption =  serviceMenu.entries[serviceMenu.selected];
-  // auto type = (mainMenuOption == ui::menu::main::SEND_COMMAND) ?
-  // ui::types::Command::Type::Input : ui::types::Command::Type::Known;
-  // command.emplace(serviceMenuOption, type);
-
-  // if(commandsMenu.entries.size() == 0){
-  //     return;
-  // }
-  // if(commandsMenu.entries[commandsMenu.selected] ==
-  // ui::menu::commands::SEND_CMD_INPUT){
-  //     return;
-  // }
-  // command->moveReady(commandsMenu.entries[commandsMenu.selected]);
-}
-
-void Manager::enterClicked() {
-  // using namespace ui::objects;
-  // if(command == std::nullopt){
-  //     return;
-  // }
-  // const auto& mainMenuOption = mainMenu.entries[mainMenu.selected];
-
-  // if(mainMenuOption == ui::menu::main::SEND_COMMAND){
-  //     if(commandsMenu.entries[commandsMenu.selected] !=
-  //     ui::menu::commands::SEND_CMD_INPUT){
-  //         command->moveFinished();
-  //     } else {
-  //         command->moveReady(input.content);
-  //         command->moveFinished();
-  //     }
-  // } else if(mainMenuOption == ui::menu::main::SEND_COMMAND_WAIT){
-  //     if(commandsMenu.entries[commandsMenu.selected] !=
-  //     ui::menu::commands::SEND_CMD_INPUT){
-  //         command->moveWaiting();
-  //     }else{
-  //         command->moveReady(input.content);
-  //         command->moveWaiting();
-  //     }
-  // }
+  }
 }
 
 } // namespace ui
