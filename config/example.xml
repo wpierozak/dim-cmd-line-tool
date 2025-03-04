@@ -2,7 +2,6 @@
 <Service type = "command" name = "ALF/SERIAL_0/ENDPOINT_0/LINK_0/SWT_SEQUENCE/RpcIn" alias = "LINK_0_IN">
     <commands>
         <command name = "sc_reset">sc_reset</command>
-        <command name = "read" file ="cmd"/>
     </commands>
     <response_on>
         <service>LINK_0_OUT</service>

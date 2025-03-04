@@ -1,0 +1,24 @@
+<Configuration>
+
+<Service type = "command" name = "MOCK-DIM/TEST/IN" alias = "TEST/IN">
+    <commands>
+        <command name = "cmd-a">cmd-a</command>
+        <command name = "cmd-b">cmd-b</command>
+    </commands>
+    <response_on>
+        <service>TEST/A</service>
+    </response_on>
+</Service>
+
+
+<Service type = "service_info" name = "MOCK-DIM/TEST/A" alias = "TEST/A" >
+    <output>
+        <file path = "test-a.txt"/>
+    </output>
+</Service>
+<Service type = "service_info" name = "MOCK-DIM/TEST/B" alias = "TEST/B" >
+    <output>
+        <file path = "test-b.txt"/>
+    </output>
+</Service>
+</Configuration>
