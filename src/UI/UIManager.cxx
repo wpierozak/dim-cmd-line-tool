@@ -46,12 +46,20 @@ void Manager::runUI() {
     while (refresh_ui_continue) {
       using namespace std::chrono_literals;
       std::this_thread::sleep_for(0.1s);
-
       // After updating the state, request a new frame to be drawn. This is done
       // by simulating a new "custom" event to be handled.
       screen.Post(ftxui::Event::Custom);
     }
   });
+
+  component |= ftxui::CatchEvent([&](ftxui::Event event) 
+    {
+      if(event == ftxui::Event::F2){
+        enterClicked();
+        return true;
+      }
+      return false;
+    });
   try{
   screen.Loop(component);
   }
@@ -86,7 +94,6 @@ void Manager::enterClicked()
     ui::objects::command->executeAndWait();
   } else if(ui::objects::mainMenu->option() == ui::menu::main::SEND_COMMAND){
     ui::objects::command->execute();
-
   }
 }
 
