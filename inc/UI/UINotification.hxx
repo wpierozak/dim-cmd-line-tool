@@ -3,7 +3,7 @@
 #include <memory>
 #include <optional>
 #include <string>
-
+#include "UITools.hxx"
 namespace ui {
 namespace notify {
 
@@ -20,8 +20,8 @@ private:
 class Subscriber : virtual public Node {
 public:
   Subscriber(const std::string &identity_) : Node(identity_) {}
-  virtual void notify(std::string publisher,
-                      std::optional<std::string> context) = 0;
+  virtual void notify(const std::string& publisher,
+                      opt_str_ref context) = 0;
   virtual ~Subscriber() = default;
 };
 

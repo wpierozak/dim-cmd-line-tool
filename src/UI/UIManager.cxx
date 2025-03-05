@@ -45,9 +45,7 @@ void Manager::runUI() {
   std::thread refresh_ui([&] {
     while (refresh_ui_continue) {
       using namespace std::chrono_literals;
-      std::this_thread::sleep_for(0.1s);
-      // After updating the state, request a new frame to be drawn. This is done
-      // by simulating a new "custom" event to be handled.
+      std::this_thread::sleep_for(0.05s);
       screen.Post(ftxui::Event::Custom);
     }
   });

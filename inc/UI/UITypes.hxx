@@ -38,8 +38,7 @@ public:
   }
 
   void evaluateState() override;
-  void notify(std::string publisher,
-              std::optional<std::string> context) override;
+  void notify(const std::string& publisher, opt_str_ref context) override;
   ftxui::Component &component() { return m_component; }
 
   int selected() const { return m_selected; }
@@ -47,7 +46,7 @@ public:
   opt_str nullableOption() const {return (m_selected != -1) ? opt_str(m_entries[m_selected]) : std::nullopt;}
 
 private:
-  void updateEntries(std::string context);
+  void updateEntries(const std::string& context);
 
   std::vector<std::string> m_entries;
   int m_selected;
@@ -77,7 +76,7 @@ class MessageBox: public notify::Subscriber
 public:
   MessageBox(const std::string ID): Node(ID), Subscriber(ID) {}
 
-  void notify(std::string publisher, std::optional<std::string> context) override;
+  void notify(const std::string& publisher, opt_str_ref context) override;
   void evaluateState();
   ftxui::Element Render();
 private:
@@ -113,7 +112,7 @@ public:
   enum class Type { Known, Input };
 
   Command(const std::string &ID): Node(ID), Subscriber(ID) {}
-  void notify(std::string publisher, opt_str context) override;
+  void notify(const std::string& publisher, opt_str_ref context) override;
 
   State state() {
     std::lock_guard lock(m_mutex);

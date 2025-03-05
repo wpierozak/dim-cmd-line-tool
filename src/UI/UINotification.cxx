@@ -24,7 +24,11 @@ void Publisher::notifyAll() {
       expired.push_back(name);
     }
     auto owningPtr = subscriber.lock();
-    owningPtr->notify(identity(), m_state);
+    if(m_state == std::nullopt){
+      owningPtr->notify(identity(), std::nullopt);
+    } else{
+      owningPtr->notify(identity(), *m_state);
+    }
   }
 
   for (auto &sub : expired) {

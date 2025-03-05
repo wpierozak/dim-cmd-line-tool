@@ -9,6 +9,8 @@
 namespace ui {
     
 typedef std::optional<std::string> opt_str;
+typedef std::optional<std::reference_wrapper<std::string>> opt_str_ref;
+
 namespace tools {
 std::vector<std::string> get_last_n_lines(const std::string &text, size_t n);
 std::vector<std::string> split_string_by_newline(const std::string &str);

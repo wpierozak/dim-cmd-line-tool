@@ -15,7 +15,7 @@ void Menu::evaluateState() {
   updateState(m_entries[m_selected]);
 }
 
-void Menu::notify(std::string publisher, std::optional<std::string> state) {
+void Menu::notify(const std::string& publisher, opt_str_ref state) {
   
   if (state.has_value()) {
     updateEntries(state.value());
@@ -27,11 +27,11 @@ void Menu::notify(std::string publisher, std::optional<std::string> state) {
   evaluateState();
 }
 
-void Menu::updateEntries(std::string context) {
+void Menu::updateEntries(const std::string& context) {
   m_entries = m_entriesSource(context);
 }
 
-void MessageBox::notify(std::string publisher, std::optional<std::string> context)
+void MessageBox::notify(const std::string& publisher, opt_str_ref context)
 {
   evaluateState();
 }
@@ -100,10 +100,10 @@ ftxui::Element MultiLineText::Render() {
   return ftxui::vbox(elements);
 }
 
-void Command::notify(std::string publisher, opt_str context)
+void Command::notify(const std::string& publisher, opt_str_ref context)
 {
   if(publisher == ui::objects::mainMenu->identity()){
-    if(context != menu::main::SEND_COMMAND && context != menu::main::SEND_COMMAND_WAIT){
+    if(context->get() != menu::main::SEND_COMMAND && context->get() != menu::main::SEND_COMMAND_WAIT){
       m_state = State::Invalid;
     } else{
       m_state = State::Active;
@@ -113,7 +113,7 @@ void Command::notify(std::string publisher, opt_str context)
       m_commandSender = ui::objects::serviceMenu->option();
     }
   } else if(publisher == ui::objects::commandsMenu->identity() && m_state != State::Invalid){
-    if(context == menu::commands::SEND_CMD_INPUT){
+    if(context->get() == menu::commands::SEND_CMD_INPUT){
       m_type = Type::Input;
     } else{
       m_command = context.value();
