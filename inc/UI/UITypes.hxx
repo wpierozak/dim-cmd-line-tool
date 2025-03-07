@@ -27,31 +27,21 @@ private:
   uint64_t m_counter{0};
 };
 
-class Menu : public notify::Publisher, public notify::Subscriber {
+class Menu{
 public:
-  Menu(const std::string &ID,
-       std::function<std::vector<std::string>(const std::string &)>
-           entriesSources_)
-      : Node(ID), Publisher(ID), Subscriber(ID),
-        m_entriesSource(entriesSources_) {
+  Menu(){
     m_component = ftxui::Menu(&m_entries, &m_selected);
   }
 
-  void evaluateState() override;
-  void notify(const std::string& publisher, opt_str_ref context) override;
   ftxui::Component &component() { return m_component; }
 
   int selected() const { return m_selected; }
   const std::string& option() const { return m_entries[m_selected]; }
   opt_str nullableOption() const {return (m_selected != -1) ? opt_str(m_entries[m_selected]) : std::nullopt;}
 
-private:
-  void updateEntries(const std::string& context);
-
+protected:
   std::vector<std::string> m_entries;
   int m_selected;
-
-  std::function<std::vector<std::string>(const std::string &)> m_entriesSource;
   ftxui::Component m_component;
 };
 

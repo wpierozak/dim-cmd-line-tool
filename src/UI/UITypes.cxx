@@ -1,88 +1,55 @@
+#include <UI/UIMenuContent.hxx>
+#include <UI/UIObjects.hxx>
 #include <UI/UITypes.hxx>
-#include<UI/UIObjects.hxx>
-#include<UI/UIMenuContent.hxx>
 
 namespace ui {
 namespace types {
-void Menu::evaluateState() {
-  if (m_entries.empty()) {
-    updateState(std::nullopt);
-    return;
-  }
-  if(m_selected == -1){
-    m_selected = 0;
-  }
-  updateState(m_entries[m_selected]);
-}
 
-void Menu::notify(const std::string& publisher, opt_str_ref state) {
-  
-  if (state.has_value()) {
-    updateEntries(state.value());
-  } else if (m_entries.empty() == false) {
-    m_entries.clear();
-    m_selected = -1;
-  }
-
+void MessageBox::notify(const std::string &publisher, opt_str_ref context) {
   evaluateState();
 }
 
-void Menu::updateEntries(const std::string& context) {
-  m_entries = m_entriesSource(context);
-}
-
-void MessageBox::notify(const std::string& publisher, opt_str_ref context)
-{
-  evaluateState();
-}
-
-void MessageBox::evaluateState()
-{
-  if(ui::objects::mainMenu->option() == menu::main::PRINT_LATEST_DATA){
+void MessageBox::evaluateState() {
+  if (ui::objects::mainMenu->option() == menu::main::PRINT_LATEST_DATA) {
     printLatestData();
-  } else if(ui::objects::mainMenu->option() == menu::main::LOGS){
+  } else if (ui::objects::mainMenu->option() == menu::main::LOGS) {
     printLogs();
-  } else if(ui::objects::mainMenu->option() == menu::main::SEND_COMMAND_WAIT){
+  } else if (ui::objects::mainMenu->option() == menu::main::SEND_COMMAND_WAIT) {
     printCommand();
-  } else{
+  } else {
     m_content = MultiLineText("");
   }
 }
 
-void MessageBox::printCommand()
-{
+void MessageBox::printCommand() {
   auto resp = objects::command->response();
   auto err = objects::command->error();
-  if(resp.has_value()){
+  if (resp.has_value()) {
     m_content = MultiLineText(resp.value());
-  } else if(err.has_value()){
+  } else if (err.has_value()) {
     m_content = MultiLineText(err.value());
   }
 }
 
-void MessageBox::printLogs(){
-  m_content = MultiLineText(Logger::Get().getQuietLogs(),3);
+void MessageBox::printLogs() {
+  m_content = MultiLineText(Logger::Get().getQuietLogs(), 3);
 }
 
-void MessageBox::printLatestData()
-{
+void MessageBox::printLatestData() {
   opt_str service = ui::objects::serviceMenu->nullableOption();
-  if(service == std::nullopt){
+  if (service == std::nullopt) {
     m_content = MultiLineText("");
     return;
   }
-  auto res = DIM_MANAGER.getServiceData(service.value(),true);
-  if(res.isError()){
+  auto res = DIM_MANAGER.getServiceData(service.value(), true);
+  if (res.isError()) {
     m_content = MultiLineText(res.error.value());
     return;
   }
   m_content = MultiLineText(res.result.value_or(""));
 }
 
-ftxui::Element MessageBox::Render()
-{
-  return m_content.Render();
-}
+ftxui::Element MessageBox::Render() { return m_content.Render(); }
 
 MultiLineText::MultiLineText(const std::string &text, size_t lines) {
   if (lines == std::string::npos) {
@@ -100,22 +67,24 @@ ftxui::Element MultiLineText::Render() {
   return ftxui::vbox(elements);
 }
 
-void Command::notify(const std::string& publisher, opt_str_ref context)
-{
-  if(publisher == ui::objects::mainMenu->identity()){
-    if(context->get() != menu::main::SEND_COMMAND && context->get() != menu::main::SEND_COMMAND_WAIT){
+void Command::notify(const std::string &publisher, opt_str_ref context) {
+  if (publisher == ui::objects::mainMenu->identity()) {
+    if (context->get() != menu::main::SEND_COMMAND &&
+        context->get() != menu::main::SEND_COMMAND_WAIT) {
       m_state = State::Invalid;
-    } else{
+    } else {
       m_state = State::Active;
     }
-  } else if(publisher == ui::objects::serviceMenu->identity() && m_state != State::Invalid){
-    if(ui::objects::serviceMenu->nullableOption().has_value()){
+  } else if (publisher == ui::objects::serviceMenu->identity() &&
+             m_state != State::Invalid) {
+    if (ui::objects::serviceMenu->nullableOption().has_value()) {
       m_commandSender = ui::objects::serviceMenu->option();
     }
-  } else if(publisher == ui::objects::commandsMenu->identity() && m_state != State::Invalid){
-    if(context->get() == menu::commands::SEND_CMD_INPUT){
+  } else if (publisher == ui::objects::commandsMenu->identity() &&
+             m_state != State::Invalid) {
+    if (context->get() == menu::commands::SEND_CMD_INPUT) {
       m_type = Type::Input;
-    } else{
+    } else {
       m_command = context.value();
       m_type = Type::Known;
     }
@@ -124,7 +93,7 @@ void Command::notify(const std::string& publisher, opt_str_ref context)
 }
 
 void Command::executeAndWait() {
-  if(m_state == State::Invalid){
+  if (m_state == State::Invalid) {
     LOG(ERROR) << "Command is not ready! State: " << stateToString(m_state);
     return;
   }
@@ -142,7 +111,7 @@ void Command::executeAndWait() {
 }
 
 void Command::execute() {
-  if(m_state == State::Invalid){
+  if (m_state == State::Invalid) {
     LOG(ERROR) << "Command is not ready! State: " << stateToString(m_state);
     return;
   }

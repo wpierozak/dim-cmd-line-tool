@@ -11,7 +11,7 @@ void Manager::runUI() {
   ui::objects::serviceMenu->subscribe(ui::objects::commandsMenu);
   ui::objects::serviceMenu->subscribe(ui::objects::command);
   ui::objects::commandsMenu->subscribe(ui::objects::command);
-  
+
   // ui::objects::mainMenu->updateEntries();
   auto button = ftxui::Button("Enter", [&] { enterClicked(); });
   auto screen = ftxui::ScreenInteractive::FitComponent();
@@ -50,25 +50,21 @@ void Manager::runUI() {
     }
   });
 
-  component |= ftxui::CatchEvent([&](ftxui::Event event) 
-    {
-      if(event == ftxui::Event::F2){
-        enterClicked();
-        return true;
-      }
-      return false;
-    });
-  try{
-  screen.Loop(component);
-  }
-  catch(std::exception& e)
-  {
-   std::cout << e.what(); 
+  component |= ftxui::CatchEvent([&](ftxui::Event event) {
+    if (event == ftxui::Event::F2) {
+      enterClicked();
+      return true;
+    }
+    return false;
+  });
+  try {
+    screen.Loop(component);
+  } catch (std::exception &e) {
+    std::cout << e.what();
   }
   refresh_ui_continue = false;
   refresh_ui.join();
 }
-
 
 std::string Manager::getServiceInfo(const std::string &name) {
   auto res = DIM_MANAGER.getServiceData(name, true);
@@ -80,17 +76,16 @@ std::string Manager::getServiceInfo(const std::string &name) {
 
 std::string Manager::getLogs() { return Logger::Get().getQuietLogs(); }
 
-void Manager::enterClicked() 
-{
+void Manager::enterClicked() {
   auto cmdOption = ui::objects::commandsMenu->nullableOption();
-  if(cmdOption == std::nullopt){
+  if (cmdOption == std::nullopt) {
     return;
-  } else if(cmdOption == ui::menu::commands::SEND_CMD_INPUT){
+  } else if (cmdOption == ui::menu::commands::SEND_CMD_INPUT) {
     ui::objects::command->setCmd(ui::objects::input.content);
   }
-  if(ui::objects::mainMenu->option() == ui::menu::main::SEND_COMMAND_WAIT){
+  if (ui::objects::mainMenu->option() == ui::menu::main::SEND_COMMAND_WAIT) {
     ui::objects::command->executeAndWait();
-  } else if(ui::objects::mainMenu->option() == ui::menu::main::SEND_COMMAND){
+  } else if (ui::objects::mainMenu->option() == ui::menu::main::SEND_COMMAND) {
     ui::objects::command->execute();
   }
 }
