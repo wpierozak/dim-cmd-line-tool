@@ -8,7 +8,7 @@ void Subscriber::print(TerminalOutput output) {
   if (m_serviceData.empty()) {
     return;
   }
-  LOG_DATA(Service::getName(), m_serviceData.front());
+  LOG_DATA(Service::getName(), m_serviceData.front().data);
 }
 
 bool Subscriber::setFile(const std::string &fileName) {
@@ -19,13 +19,13 @@ bool Subscriber::setFile(const std::string &fileName) {
   return OPEN_LOG_FILE(m_fileName.value());
 }
 
-bool Subscriber::saveToFile(const std::string &output, int timeStamp)
-{
+bool Subscriber::saveToFile(const std::string &output, int timeStamp,
+                            int miliseconds) {
   if (m_fileName.has_value() == false) {
     return true;
   }
   LOG_SERVICE(DEBUG) << "Logging to file...";
-  return LOG_TO_FILE_T(m_fileName.value(), output, timeStamp);
+  return LOG_TO_FILE_T(m_fileName.value(), output, timeStamp, miliseconds);
 }
 
 bool Subscriber::saveToFile(const std::string &output) {
@@ -36,14 +36,15 @@ bool Subscriber::saveToFile(const std::string &output) {
   return LOG_TO_FILE(m_fileName.value(), output);
 }
 
-bool Subscriber::handleNewData(const std::string& data, int timeStamp)
-{
-  m_serviceData.emplace_front(data);
+bool Subscriber::handleNewData(const std::string &data, int timeStamp,
+                               int miliseconds) {
+  markStateChange();
+  m_serviceData.emplace_front(data, timeStamp, miliseconds);
   if (m_serviceData.size() > m_bufferedDataLimit) {
     m_serviceData.pop_back();
   }
 
-  if (!saveToFile(data, timeStamp)) {
+  if (!saveToFile(data, timeStamp, miliseconds)) {
     LOG_SERVICE(ERROR) << "File update failed!";
   }
   if (m_hideTerminal == false) {
@@ -53,6 +54,7 @@ bool Subscriber::handleNewData(const std::string& data, int timeStamp)
 }
 
 bool Subscriber::handleNewData(const std::string &data) {
+  markStateChange();
   m_serviceData.emplace_front(data);
   if (m_serviceData.size() > m_bufferedDataLimit) {
     m_serviceData.pop_back();

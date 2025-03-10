@@ -46,8 +46,6 @@ public:
   utils::Result<std::string, std::string>
   getServiceData(const std::string &service, bool getImmediateData = false);
 
-  
-
   std::list<std::string> getCommandSenders();
   std::list<std::string> getSubscribers();
   std::list<std::string> getCommands(const std::string &service);
@@ -55,6 +53,15 @@ public:
   bool isSubscriber(const std::string &name) {
     return (m_subscribersByName.find(name) != m_subscribersByName.end()) ||
            (m_subscribersByAlias.find(name) != m_subscribersByAlias.end());
+  }
+
+  uint64_t getServiceState(const std::string &name) {
+    if (m_subscribersByName.find(name) != m_subscribersByName.end()) {
+      return m_subscribersByName[name]->state();
+    } else if (m_subscribersByAlias.find(name) != m_subscribersByAlias.end()) {
+      return m_subscribersByAlias[name]->state();
+    }
+    return 0;
   }
 
 private:

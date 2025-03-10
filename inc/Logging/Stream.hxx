@@ -46,7 +46,7 @@ public:
   StreamMonitor &monitor() { return m_monitor; }
 
   StreamMonitor &operator()() { return m_monitor; }
-  const StreamType& stream(){return m_fileStream;}
+  const StreamType &stream() { return m_fileStream; }
 
 protected:
   StreamType m_fileStream;
@@ -55,7 +55,9 @@ protected:
 
 class FileStream : public StreamOwner<std::ofstream> {
 public:
-  FileStream(const std::string &fileName) { m_fileStream.open(fileName, std::ios::app); }
+  FileStream(const std::string &fileName) {
+    m_fileStream.open(fileName, std::ios::app);
+  }
 
   bool isOpen() { return m_fileStream.is_open(); }
 };

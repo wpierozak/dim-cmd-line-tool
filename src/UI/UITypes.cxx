@@ -10,6 +10,7 @@ void MessageBox::notify(const std::string &publisher, opt_str_ref context) {
 }
 
 void MessageBox::evaluateState() {
+
   if (ui::objects::mainMenu->option() == menu::main::PRINT_LATEST_DATA) {
     printLatestData();
   } else if (ui::objects::mainMenu->option() == menu::main::LOGS) {
@@ -17,7 +18,7 @@ void MessageBox::evaluateState() {
   } else if (ui::objects::mainMenu->option() == menu::main::SEND_COMMAND_WAIT) {
     printCommand();
   } else {
-    m_content = MultiLineText("");
+    m_content("");
   }
 }
 
@@ -25,28 +26,35 @@ void MessageBox::printCommand() {
   auto resp = objects::command->response();
   auto err = objects::command->error();
   if (resp.has_value()) {
-    m_content = MultiLineText(resp.value());
+    m_content(resp.value());
   } else if (err.has_value()) {
-    m_content = MultiLineText(err.value());
+    m_content(err.value());
   }
 }
 
-void MessageBox::printLogs() {
-  m_content = MultiLineText(Logger::Get().getQuietLogs(), 3);
-}
+void MessageBox::printLogs() { m_content(Logger::Get().getQuietLogs()); }
 
 void MessageBox::printLatestData() {
   opt_str service = ui::objects::serviceMenu->nullableOption();
   if (service == std::nullopt) {
-    m_content = MultiLineText("");
+    m_content("");
     return;
   }
+  if (m_currentService == service.value() &&
+      m_serviceState == DIM_MANAGER.getServiceState(service.value())) {
+    return;
+  }
+
+  m_currentService = service.value();
+  m_serviceState = DIM_MANAGER.getServiceState(m_currentService);
+
   auto res = DIM_MANAGER.getServiceData(service.value(), true);
   if (res.isError()) {
-    m_content = MultiLineText(res.error.value());
+    m_content(res.error.value());
     return;
   }
-  m_content = MultiLineText(res.result.value_or(""));
+
+  m_content(res.result.value_or(""));
 }
 
 ftxui::Element MessageBox::Render() { return m_content.Render(); }
@@ -59,9 +67,24 @@ MultiLineText::MultiLineText(const std::string &text, size_t lines) {
   }
 }
 
+void MultiLineText::operator()(const std::string &text, size_t lines) {
+  if (lines == std::string::npos) {
+    m_lines = tools::split_string_by_newline(text);
+  } else {
+    m_lines = tools::get_last_n_lines(text, lines);
+  }
+}
+
 ftxui::Element MultiLineText::Render() {
   ftxui::Elements elements;
+  int idx = -1;
   for (const auto &line : m_lines) {
+    idx++;
+    if (idx < m_first) {
+      continue;
+    } else if (idx >= m_first + m_last) {
+      break;
+    }
     elements.push_back(ftxui::paragraph(line));
   }
   return ftxui::vbox(elements);

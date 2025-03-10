@@ -27,17 +27,17 @@ private:
   uint64_t m_counter{0};
 };
 
-class Menu{
+class Menu {
 public:
-  Menu(){
-    m_component = ftxui::Menu(&m_entries, &m_selected);
-  }
+  Menu() { m_component = ftxui::Menu(&m_entries, &m_selected); }
 
   ftxui::Component &component() { return m_component; }
 
   int selected() const { return m_selected; }
-  const std::string& option() const { return m_entries[m_selected]; }
-  opt_str nullableOption() const {return (m_selected != -1) ? opt_str(m_entries[m_selected]) : std::nullopt;}
+  const std::string &option() const { return m_entries[m_selected]; }
+  opt_str nullableOption() const {
+    return (m_selected != -1) ? opt_str(m_entries[m_selected]) : std::nullopt;
+  }
 
 protected:
   std::vector<std::string> m_entries;
@@ -52,23 +52,39 @@ struct Input {
 };
 
 class MultiLineText {
-  public:
-    MultiLineText() = default;
-    MultiLineText(const std::string &text, size_t lines = std::string::npos);
-    ftxui::Element Render();
-  
-  private:
-    std::vector<std::string> m_lines;
-  };
-
-class MessageBox: public notify::Subscriber
-{
 public:
-  MessageBox(const std::string ID): Node(ID), Subscriber(ID) {}
+  MultiLineText() = default;
+  MultiLineText(const std::string &text, size_t lines = std::string::npos);
+  void operator()(const std::string &text, size_t lines = std::string::npos);
+  ftxui::Element Render();
+  void firstLine(size_t first) { m_first = first; }
+  void lineNumber(size_t lineNumber) { m_last = lineNumber; }
 
-  void notify(const std::string& publisher, opt_str_ref context) override;
+private:
+  std::vector<std::string> m_lines;
+  size_t m_first{0};
+  size_t m_last{10};
+};
+
+class MessageBox : public notify::Subscriber {
+public:
+  MessageBox(const std::string ID) : Node(ID), Subscriber(ID) {}
+
+  void notify(const std::string &publisher, opt_str_ref context) override;
   void evaluateState();
   ftxui::Element Render();
+  void moveTextLineUp() {
+    m_first++;
+    m_content.firstLine(m_first);
+  }
+
+  void moveTextLineDown() {
+    if (m_first > 0) {
+      m_first--;
+    }
+    m_content.firstLine(m_first);
+  }
+
 private:
   void printLogs();
   void printLatestData();
@@ -76,34 +92,39 @@ private:
 
   MultiLineText m_content;
   uint32_t m_currentServiceData;
+  std::string m_currentService;
+  uint64_t m_serviceState;
+
+  uint32_t m_first{0};
+  uint32_t m_lineNumber{10};
 };
 
-class Command: public notify::Subscriber {
+class Command : public notify::Subscriber {
 public:
   enum class State { Invalid, Active, Ready, Waiting, Finished, Failure };
-  
+
   static std::string stateToString(State state) {
     switch (state) {
-      case State::Invalid:
-        return "Invalid";
-      case State::Active:
-        return "Active";
-      case State::Ready:
-        return "Ready";
-      case State::Waiting:
-        return "Waiting";
-      case State::Finished:
-        return "Finished";
-      case State::Failure:
-        return "Failure";
-      default:
-        return "Unknown";
+    case State::Invalid:
+      return "Invalid";
+    case State::Active:
+      return "Active";
+    case State::Ready:
+      return "Ready";
+    case State::Waiting:
+      return "Waiting";
+    case State::Finished:
+      return "Finished";
+    case State::Failure:
+      return "Failure";
+    default:
+      return "Unknown";
     }
   }
   enum class Type { Known, Input };
 
-  Command(const std::string &ID): Node(ID), Subscriber(ID) {}
-  void notify(const std::string& publisher, opt_str_ref context) override;
+  Command(const std::string &ID) : Node(ID), Subscriber(ID) {}
+  void notify(const std::string &publisher, opt_str_ref context) override;
 
   State state() {
     std::lock_guard lock(m_mutex);
@@ -112,9 +133,8 @@ public:
 
   void executeAndWait();
   void execute();
-  void setCmd(const std::string& cmd)
-  { 
-    m_command = cmd; 
+  void setCmd(const std::string &cmd) {
+    m_command = cmd;
     m_state = State::Ready;
   }
 

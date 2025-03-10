@@ -17,6 +17,12 @@ namespace dim_handlers {
  */
 class Subscriber : public Service {
 public:
+  struct ServiceData {
+    std::string data;
+    int seconds;
+    int miliseconds;
+  };
+
   /**
    * @brief Constructs a new Subscriber object.
    *
@@ -54,7 +60,7 @@ public:
     if (m_serviceData.empty()) {
       return std::nullopt;
     }
-    return m_serviceData.front();
+    return m_serviceData.front().data;
   }
 
   virtual std::optional<std::string> waitForData() = 0;
@@ -111,8 +117,7 @@ public:
    * @return True if the output is successfully saved, false otherwise.
    */
   bool saveToFile(const std::string &output);
-
-  bool saveToFile(const std::string &output, int timeStamp);
+  bool saveToFile(const std::string &output, int timeStamp, int miliseconds);
 
   /**
    * @brief Handles new data fetched from the service.
@@ -120,8 +125,8 @@ public:
    * @return True if the data is successfully handled, false otherwise.
    */
   virtual bool handleNewData(const std::string &data);
-
-  virtual bool handleNewData(const std::string& data, int timeStamp);
+  virtual bool handleNewData(const std::string &data, int timeStamp,
+                             int miliseconds);
 
 protected:
   bool
@@ -145,8 +150,7 @@ private:
     }
   }
 
-  std::list<std::string> m_serviceData;
-  std::list<int> m_serviceTimeStamps;
+  std::list<ServiceData> m_serviceData;
   std::optional<std::string> m_fileName;
   std::optional<std::ofstream> m_file;
   std::optional<uint32_t> m_timeout;

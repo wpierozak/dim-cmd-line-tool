@@ -19,10 +19,13 @@ public:
   std::string getName() const { return m_name; }
   std::optional<std::string> getAlias() const { return m_alias; }
   Type getType() const { return m_type; }
+  uint64_t state() { return m_state; }
+  void markStateChange() { m_state++; }
 
 private:
   std::string m_name;
   std::optional<std::string> m_alias;
+  uint64_t m_state;
   Type m_type;
 };
 

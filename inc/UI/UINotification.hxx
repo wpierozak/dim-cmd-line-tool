@@ -1,10 +1,10 @@
 #pragma once
+#include "UITools.hxx"
 #include <functional>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
-#include "UITools.hxx"
 namespace ui {
 namespace notify {
 
@@ -21,8 +21,7 @@ private:
 class Subscriber : virtual public Node {
 public:
   Subscriber(const std::string &identity_) : Node(identity_) {}
-  virtual void notify(const std::string& publisher,
-                      opt_str_ref context) = 0;
+  virtual void notify(const std::string &publisher, opt_str_ref context) = 0;
   virtual ~Subscriber() = default;
 };
 
@@ -34,7 +33,7 @@ public:
 
   void subscribe(SubscriberHandle subscriber);
   void unsubscribe(const std::string &subscriber);
-  void updateAlways(bool on) {m_updateAlways = on;}
+  void updateAlways(bool on) { m_updateAlways = on; }
 
   virtual void evaluateState() = 0;
   virtual ~Publisher() = default;

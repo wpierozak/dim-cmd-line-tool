@@ -1,13 +1,13 @@
 #pragma once
 #include <functional> // for function
 #include <memory>     // for shared_ptr, allocator, __shared_ptr_access
-#include <string>     // for string, basic_string
-#include <vector>     // for vector
-#include<optional>
+#include <optional>
+#include <string> // for string, basic_string
+#include <vector> // for vector
 
 #include "ftxui/component/component.hpp"
 namespace ui {
-    
+
 typedef std::optional<std::string> opt_str;
 typedef std::optional<std::reference_wrapper<std::string>> opt_str_ref;
 

@@ -1,14 +1,14 @@
-#include <UI/UIMainMenu.hxx>
 #include <UI/UICommandMenu.hxx>
+#include <UI/UIMainMenu.hxx>
 namespace ui {
 namespace menu {
 void CommandMenu::updateEntries(opt_str_ref contextOpt) {
   m_entries.clear();
-  if(contextOpt.has_value() == false){
+  if (contextOpt.has_value() == false) {
     return;
   }
   auto context = *contextOpt;
-  
+
   auto source = DIM_MANAGER.getCommands(context);
   if (source.empty()) {
     return;

@@ -12,14 +12,14 @@ public:
               std::optional<uint32_t> timeout = std::nullopt)
       : Subscriber(name, alias, Type::ServiceInfo, timeout),
         DimStampedInfo(const_cast<char *>(name.c_str()),
-                const_cast<char *>(SERVICE_NO_LINK.data())) {}
+                       const_cast<char *>(SERVICE_NO_LINK.data())) {}
 
   void infoHandler() override {
     std::string newData = getString();
     LOG_SERVICE(DEBUG) << "Received new data";
-  
+
     if (newData != SERVICE_NO_LINK) {
-      handleNewData(newData,0);
+      handleNewData(newData, getTimestamp(), getTimestampMillisecs());
     }
   }
 

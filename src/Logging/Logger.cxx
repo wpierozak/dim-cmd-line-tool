@@ -45,23 +45,23 @@ bool Logger::openFile(const std::string &name) {
 
 void Logger::closeFile(const std::string &name) { m_files.erase(name); }
 
-bool Logger::writeToFile(const std::string &fileName, const std::string &content, int timeStamp)
-{
-  auto data_format = [](int timeStampe){
-    // Get current time
-    time_t now = time(nullptr);
-    
-    struct tm *localTime = localtime(&now);
-    
-    // Create a buffer to hold the formatted string
-    char buffer[20]; // Format: "DD/MM/YYYY HH:MM:SS" -> 19 characters + null terminator
+bool Logger::writeToFile(const std::string &fileName,
+                         const std::string &content, int timeStamp,
+                         int miliseconds) {
+  auto data_format = [](int timestamp, int miliseconds) {
+    time_t t = timestamp;
+    struct tm *localTime = localtime(&t);
+    char buffer[64];
     strftime(buffer, sizeof(buffer), "%d/%m/%Y %H:%M:%S", localTime);
-    
-    return std::string(buffer);
+    char result[80];
+    snprintf(result, sizeof(result), "%s.%03d", buffer, miliseconds);
+    return std::string(result);
   };
 
   if (m_files.find(fileName) != m_files.end()) {
-    m_files.at(fileName)->monitor() << "\n\n" << data_format(timeStamp) << "\n\n" << content;
+    m_files.at(fileName)->monitor()
+        << "\n\n[" << data_format(timeStamp, miliseconds) << "]\n"
+        << content;
     m_files.at(fileName)->monitor().flush();
     return true;
   }

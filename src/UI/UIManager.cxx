@@ -54,9 +54,14 @@ void Manager::runUI() {
     if (event == ftxui::Event::F2) {
       enterClicked();
       return true;
+    } else if (event == ftxui::Event::ArrowLeftCtrl) {
+      ui::objects::messageBox->moveTextLineDown();
+    } else if (event == ftxui::Event::ArrowRightCtrl) {
+      ui::objects::messageBox->moveTextLineUp();
     }
     return false;
   });
+
   try {
     screen.Loop(component);
   } catch (std::exception &e) {

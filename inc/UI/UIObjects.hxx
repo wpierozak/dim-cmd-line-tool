@@ -1,7 +1,7 @@
-#include "UITypes.hxx"
 #include "UICommandMenu.hxx"
-#include "UIServiceMenu.hxx"
 #include "UIMainMenu.hxx"
+#include "UIServiceMenu.hxx"
+#include "UITypes.hxx"
 
 namespace ui {
 namespace objects {
