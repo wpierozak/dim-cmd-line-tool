@@ -27,6 +27,7 @@ public:
     static constexpr std::string_view SEND_COMMAND_WAIT = "Send command and wait for data";
     static constexpr std::string_view PRINT_LATEST_DATA = "Print latest data";
     static constexpr std::string_view LOGS = "Print logs";
+    static constexpr std::string_view BROWSE_BUFFERED_DATA = "Browse buffered data";
 };
 }
 }

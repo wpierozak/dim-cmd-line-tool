@@ -55,7 +55,7 @@ protected:
 
 class FileStream : public StreamOwner<std::ofstream> {
 public:
-  FileStream(const std::string &fileName) { m_fileStream.open(fileName); }
+  FileStream(const std::string &fileName) { m_fileStream.open(fileName, std::ios::app); }
 
   bool isOpen() { return m_fileStream.is_open(); }
 };

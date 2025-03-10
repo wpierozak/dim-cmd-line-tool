@@ -112,12 +112,16 @@ public:
    */
   bool saveToFile(const std::string &output);
 
+  bool saveToFile(const std::string &output, int timeStamp);
+
   /**
    * @brief Handles new data fetched from the service.
    * @param data The new data as a string.
    * @return True if the data is successfully handled, false otherwise.
    */
   virtual bool handleNewData(const std::string &data);
+
+  virtual bool handleNewData(const std::string& data, int timeStamp);
 
 protected:
   bool
@@ -142,11 +146,12 @@ private:
   }
 
   std::list<std::string> m_serviceData;
+  std::list<int> m_serviceTimeStamps;
   std::optional<std::string> m_fileName;
   std::optional<std::ofstream> m_file;
   std::optional<uint32_t> m_timeout;
   bool m_hideTerminal = false;
 
-  uint32_t m_bufferedDataLimit{2};
+  uint32_t m_bufferedDataLimit{256};
 };
 } // namespace dim_handlers

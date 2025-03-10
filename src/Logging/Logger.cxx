@@ -45,6 +45,29 @@ bool Logger::openFile(const std::string &name) {
 
 void Logger::closeFile(const std::string &name) { m_files.erase(name); }
 
+bool Logger::writeToFile(const std::string &fileName, const std::string &content, int timeStamp)
+{
+  auto data_format = [](int timeStampe){
+    // Get current time
+    time_t now = time(nullptr);
+    
+    struct tm *localTime = localtime(&now);
+    
+    // Create a buffer to hold the formatted string
+    char buffer[20]; // Format: "DD/MM/YYYY HH:MM:SS" -> 19 characters + null terminator
+    strftime(buffer, sizeof(buffer), "%d/%m/%Y %H:%M:%S", localTime);
+    
+    return std::string(buffer);
+  };
+
+  if (m_files.find(fileName) != m_files.end()) {
+    m_files.at(fileName)->monitor() << "\n\n" << data_format(timeStamp) << "\n\n" << content;
+    m_files.at(fileName)->monitor().flush();
+    return true;
+  }
+  return false;
+}
+
 bool Logger::writeToFile(const std::string &fileName,
                          const std::string &content) {
   if (m_files.find(fileName) != m_files.end()) {

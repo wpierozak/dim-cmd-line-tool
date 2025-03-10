@@ -75,6 +75,7 @@ private:
   void printCommand();
 
   MultiLineText m_content;
+  uint32_t m_currentServiceData;
 };
 
 class Command: public notify::Subscriber {

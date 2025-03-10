@@ -20,6 +20,7 @@
 #define LOG_DATA(name, data) Logger::Get().printServiceData(name, data)
 
 #define LOG_TO_FILE(file, content) Logger::Get().writeToFile(file, content)
+#define LOG_TO_FILE_T(file, content, timestamp) Logger::Get().writeToFile(file, content, timestamp)
 #define OPEN_LOG_FILE(file) Logger::Get().openFile(file)
 #define CLOSE_LOG_FILE(file) Logger::Get().closeFile(file)
 
@@ -37,6 +38,7 @@ public:
   bool openFile(const std::string &name);
   void closeFile(const std::string &name);
   bool writeToFile(const std::string &fileName, const std::string &content);
+  bool writeToFile(const std::string &fileName, const std::string &content, int timeStamp);
 
   std::string getQuietLogs() {
     if (isQuiet()) {

@@ -19,12 +19,37 @@ bool Subscriber::setFile(const std::string &fileName) {
   return OPEN_LOG_FILE(m_fileName.value());
 }
 
+bool Subscriber::saveToFile(const std::string &output, int timeStamp)
+{
+  if (m_fileName.has_value() == false) {
+    return true;
+  }
+  LOG_SERVICE(DEBUG) << "Logging to file...";
+  return LOG_TO_FILE_T(m_fileName.value(), output, timeStamp);
+}
+
 bool Subscriber::saveToFile(const std::string &output) {
   if (m_fileName.has_value() == false) {
     return true;
   }
   LOG_SERVICE(DEBUG) << "Logging to file...";
   return LOG_TO_FILE(m_fileName.value(), output);
+}
+
+bool Subscriber::handleNewData(const std::string& data, int timeStamp)
+{
+  m_serviceData.emplace_front(data);
+  if (m_serviceData.size() > m_bufferedDataLimit) {
+    m_serviceData.pop_back();
+  }
+
+  if (!saveToFile(data, timeStamp)) {
+    LOG_SERVICE(ERROR) << "File update failed!";
+  }
+  if (m_hideTerminal == false) {
+    print(TerminalOutput::Latest);
+  }
+  return true;
 }
 
 bool Subscriber::handleNewData(const std::string &data) {
