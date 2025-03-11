@@ -38,7 +38,8 @@ bool Subscriber::saveToFile(const std::string &output) {
 
 bool Subscriber::handleNewData(const std::string &data, int timeStamp,
                                int miliseconds) {
-  markStateChange();
+  updateState(std::nullopt, true);
+
   m_serviceData.emplace_front(data, timeStamp, miliseconds);
   if (m_serviceData.size() > m_bufferedDataLimit) {
     m_serviceData.pop_back();

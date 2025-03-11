@@ -12,7 +12,8 @@ public:
               std::optional<uint32_t> timeout = std::nullopt)
       : Subscriber(name, alias, Type::ServiceInfo, timeout),
         DimStampedInfo(const_cast<char *>(name.c_str()),
-                       const_cast<char *>(SERVICE_NO_LINK.data())) {}
+                       const_cast<char *>(SERVICE_NO_LINK.data())),
+        Node(notify::fnv1aHash(name)) {}
 
   void infoHandler() override {
     std::string newData = getString();

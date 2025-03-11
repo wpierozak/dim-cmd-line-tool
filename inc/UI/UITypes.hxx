@@ -5,19 +5,19 @@
 #include <string>     // for string, basic_string
 #include <vector>     // for vector
 
-#include "UINotification.hxx"
 #include "UITools.hxx"
 #include "ftxui/component/captured_mouse.hpp" // for ftxui
 #include "ftxui/component/component.hpp" // for Slider, Checkbox, Vertical, Renderer, Button, Input, Menu, Radiobox, Toggle
 #include "ftxui/component/component_base.hpp" // for ComponentBase
 #include "ftxui/component/screen_interactive.hpp" // for Component, ScreenInteractive
 #include "ftxui/dom/elements.hpp" // for separator, operator|, Element, size, xflex, text, WIDTH, hbox, vbox, EQUAL, border, GREATER_THAN
+#include <Notify/Notification.hxx>
 
 namespace ui {
 namespace types {
 class Root : public notify::Publisher {
 public:
-  Root() : Node("ROOT"), Publisher("ROOT") {}
+  Root() : Node(0x0), Publisher(0x0) {}
   void evaluateState() override {
     m_counter++;
     updateState(std::optional<std::string>(std::to_string(m_counter)));
@@ -33,6 +33,7 @@ public:
 
   ftxui::Component &component() { return m_component; }
 
+  bool isNull() const { return m_selected == -1; }
   int selected() const { return m_selected; }
   const std::string &option() const { return m_entries[m_selected]; }
   opt_str nullableOption() const {
@@ -68,9 +69,9 @@ private:
 
 class MessageBox : public notify::Subscriber {
 public:
-  MessageBox(const std::string ID) : Node(ID), Subscriber(ID) {}
+  MessageBox(uint64_t ID) : Node(ID), Subscriber(ID) {}
 
-  void notify(const std::string &publisher, opt_str_ref context) override;
+  void notify(uint64_t publisher) override;
   void evaluateState();
   ftxui::Element Render();
   void moveTextLineUp() {
@@ -89,6 +90,8 @@ private:
   void printLogs();
   void printLatestData();
   void printCommand();
+
+  enum class Mode { Logs, LatestData, Command } m_mode;
 
   MultiLineText m_content;
   uint32_t m_currentServiceData;
@@ -123,13 +126,10 @@ public:
   }
   enum class Type { Known, Input };
 
-  Command(const std::string &ID) : Node(ID), Subscriber(ID) {}
-  void notify(const std::string &publisher, opt_str_ref context) override;
+  Command(uint64_t ID) : Node(ID), Subscriber(ID) {}
+  void notify(uint64_t publisher) override;
 
-  State state() {
-    std::lock_guard lock(m_mutex);
-    return m_state;
-  }
+  State state() { return m_state; }
 
   void executeAndWait();
   void execute();
@@ -142,7 +142,6 @@ public:
   std::optional<std::string> error() { return m_errorMessage; }
 
 private:
-  std::mutex m_mutex;
   State m_state;
   Type m_type;
   std::string m_commandSender;

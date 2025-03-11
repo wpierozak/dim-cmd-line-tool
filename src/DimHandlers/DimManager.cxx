@@ -102,7 +102,7 @@ DimManager::addCommand(const std::string &commandSender,
                        const std::string &commandText) {
   if (m_commandSendersByName.find(commandSender) ==
       m_commandSendersByName.end()) {
-    return {.result = false, .error = "Command sender does not exist."};
+    return {.result = false, .error = "Command sender " + commandSender + " does not exist."};
   }
   return m_commandSendersByName[commandSender]->addCommand(commandName,
                                                            commandText);
@@ -114,7 +114,7 @@ DimManager::addCommandFromFile(const std::string &commandSender,
                                const std::string &fileName) {
   if (m_commandSendersByName.find(commandSender) ==
       m_commandSendersByName.end()) {
-    return {.result = false, .error = "Command sender does not exist."};
+    return {.result = false, .error = "Command sender " + commandSender + " does not exist."};
   }
   return m_commandSendersByName[commandSender]->addCommandFromFile(commandName,
                                                                    fileName);
@@ -123,7 +123,7 @@ DimManager::addCommandFromFile(const std::string &commandSender,
 utils::Result<bool, std::string> DimManager::addResponseServiceToCommandSender(
     const std::string &service, const std::string &responseService) {
   if (m_commandSendersByName.find(service) == m_commandSendersByName.end()) {
-    return {.result = false, .error = "Command sender does not exist."};
+    return {.result = false, .error = "Command sender " + service + " does not exist."};
   }
 
   m_commandSendersByName[service]->addResponseService(responseService);
@@ -135,7 +135,7 @@ DimManager::executeKnownCommand(const std::string &service,
                                 const std::string &command,
                                 bool waitForResponse) {
   if (m_commandSendersByName.find(service) == m_commandSendersByName.end()) {
-    return {.error = "Command sender does not exist."};
+    return {.error = "Command sender " + service + " does not exist."};
   }
 
   if (waitForResponse) {
@@ -150,7 +150,7 @@ utils::Result<std::string, std::string>
 DimManager::executeCommand(const std::string &service,
                            const std::string &command, bool waitForResponse) {
   if (m_commandSendersByName.find(service) == m_commandSendersByName.end()) {
-    return {.error = "Command sender does not exist."};
+    return {.error = "Command sender " + service + " does not exist."};
   }
 
   if (waitForResponse) {
@@ -231,7 +231,7 @@ DimManager::getServiceData(const std::string &service, bool getImmediateData) {
   if (getImmediateData) {
     auto data = m_subscribersByName[service]->getData();
     if (data.has_value()) {
-      return {.result = data.value()};
+      return {.result = std::move(data.value())};
     }
     return {.error = "No data available."};
   }
@@ -240,7 +240,7 @@ DimManager::getServiceData(const std::string &service, bool getImmediateData) {
   if (data == std::nullopt) {
     return {.error = "No data received."};
   }
-  return {.result = data};
+  return {.result = std::move(data)};
 }
 
 std::list<std::string> DimManager::getCommandSenders() {

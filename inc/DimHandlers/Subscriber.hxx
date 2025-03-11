@@ -9,13 +9,14 @@
 #include <vector>
 
 #include "Service.hxx"
+#include <Notify/Notification.hxx>
 
 namespace dim_handlers {
 /**
  * @class Subscriber
  * @brief Represents service subscribing to either a DIM service or DIM RPC.
  */
-class Subscriber : public Service {
+class Subscriber : public Service, public notify::Publisher {
 public:
   struct ServiceData {
     std::string data;
@@ -34,7 +35,8 @@ public:
    */
   Subscriber(std::string name, std::optional<std::string> alias, Type type,
              std::optional<uint32_t> timeout = std::nullopt)
-      : Service(name, alias, type), m_timeout(timeout) {}
+      : Service(name, alias, type), Node(notify::fnv1aHash(name)),
+        Publisher(notify::fnv1aHash(name)), m_timeout(timeout) {}
 
   virtual ~Subscriber() { closeFile(); }
   /**

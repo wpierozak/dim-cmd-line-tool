@@ -10,12 +10,14 @@ public:
   RpcInfo(std::string name, std::optional<std::string> alias)
       : Subscriber(name, alias, Type::RpcInfo),
         DimRpcInfo(const_cast<char *>(name.c_str()),
-                   const_cast<char *>(RpcInfo::RPC_NO_LINK.data())) {}
+                   const_cast<char *>(RpcInfo::RPC_NO_LINK.data())),
+        Node(notify::fnv1aHash(name)) {}
 
   RpcInfo(std::string name, std::optional<std::string> alias, uint32_t timeout)
       : Subscriber(name, alias, Type::RpcInfo, timeout),
         DimRpcInfo(const_cast<char *>(name.c_str()), timeout,
-                   const_cast<char *>(RpcInfo::RPC_NO_LINK.data())) {}
+                   const_cast<char *>(RpcInfo::RPC_NO_LINK.data())),
+        Node(notify::fnv1aHash(name)) {}
 
   std::optional<std::string> waitForData() override {
     auto startTime = std::chrono::high_resolution_clock::now();

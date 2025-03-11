@@ -5,8 +5,22 @@
 namespace ui {
 namespace types {
 
-void MessageBox::notify(const std::string &publisher, opt_str_ref context) {
-  evaluateState();
+void MessageBox::notify(uint64_t publisher) 
+{
+  if(publisher == objects::serviceMenu->identity()){
+    DIM_MANAGER.unsubscribeServiceData(identity(), m_currentService);
+    
+    if(objects::serviceMenu->isNull() == false){
+      m_currentService = objects::serviceMenu->option();
+      DIM_MANAGER.subscribeServiceData(objects::messageBox, m_currentService);
+    }
+
+    if (ui::objects::mainMenu->option() == menu::main::PRINT_LATEST_DATA) {
+      printLatestData();
+    } 
+  } else if(publisher == objects::mainMenu->identity()){
+    evaluateState();
+  }
 }
 
 void MessageBox::evaluateState() {
@@ -40,20 +54,12 @@ void MessageBox::printLatestData() {
     m_content("");
     return;
   }
-  if (m_currentService == service.value() &&
-      m_serviceState == DIM_MANAGER.getServiceState(service.value())) {
-    return;
-  }
-
-  m_currentService = service.value();
-  m_serviceState = DIM_MANAGER.getServiceState(m_currentService);
 
   auto res = DIM_MANAGER.getServiceData(service.value(), true);
   if (res.isError()) {
     m_content(res.error.value());
     return;
   }
-
   m_content(res.result.value_or(""));
 }
 
@@ -68,6 +74,7 @@ MultiLineText::MultiLineText(const std::string &text, size_t lines) {
 }
 
 void MultiLineText::operator()(const std::string &text, size_t lines) {
+  m_first = 0;
   if (lines == std::string::npos) {
     m_lines = tools::split_string_by_newline(text);
   } else {
@@ -85,30 +92,25 @@ ftxui::Element MultiLineText::Render() {
     } else if (idx >= m_first + m_last) {
       break;
     }
-    elements.push_back(ftxui::paragraph(line));
+    elements.emplace_back(ftxui::paragraph(line));
   }
-  return ftxui::vbox(elements);
+  return ftxui::vbox(std::move(elements));
 }
 
-void Command::notify(const std::string &publisher, opt_str_ref context) {
-  if (publisher == ui::objects::mainMenu->identity()) {
-    if (context->get() != menu::main::SEND_COMMAND &&
-        context->get() != menu::main::SEND_COMMAND_WAIT) {
-      m_state = State::Invalid;
-    } else {
-      m_state = State::Active;
-    }
-  } else if (publisher == ui::objects::serviceMenu->identity() &&
-             m_state != State::Invalid) {
+void Command::notify(uint64_t publisher) {
+  if (publisher == ui::objects::serviceMenu->identity()) {
     if (ui::objects::serviceMenu->nullableOption().has_value()) {
       m_commandSender = ui::objects::serviceMenu->option();
     }
-  } else if (publisher == ui::objects::commandsMenu->identity() &&
-             m_state != State::Invalid) {
-    if (context->get() == menu::commands::SEND_CMD_INPUT) {
+  } else if (publisher == ui::objects::commandsMenu->identity()) {
+    if(objects::commandsMenu->isNull()){
+      return;
+    }
+    auto context = objects::commandsMenu->option();
+    if (context == menu::commands::SEND_CMD_INPUT) {
       m_type = Type::Input;
     } else {
-      m_command = context.value();
+      m_command = context;
       m_type = Type::Known;
     }
     m_state = State::Ready;

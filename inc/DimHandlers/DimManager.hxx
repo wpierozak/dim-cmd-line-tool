@@ -64,6 +64,26 @@ public:
     return 0;
   }
 
+  uint64_t subscribeServiceData(notify::SubscriberHandle subscriber, const std::string& service){
+    if (m_subscribersByName.find(service) != m_subscribersByName.end()) {
+      auto& subs = m_subscribersByName[service];
+      subs->subscribe(subscriber);
+    } else if(m_subscribersByAlias.find(service) != m_subscribersByAlias.end()){
+      auto& subs = m_subscribersByAlias[service];
+      subs->subscribe(subscriber);
+    }
+  }
+
+  uint64_t unsubscribeServiceData(uint64_t subscriber, const std::string& service){
+    if (m_subscribersByName.find(service) != m_subscribersByName.end()) {
+      auto& subs = m_subscribersByName[service];
+      subs->unsubscribe(subscriber);
+    } else if(m_subscribersByAlias.find(service) != m_subscribersByAlias.end()){
+      auto& subs = m_subscribersByAlias[service];
+      subs->unsubscribe(subscriber);
+    }
+  }
+
 private:
   DimManager() = default;
   utils::Result<std::string, std::string>

@@ -1,6 +1,6 @@
 #pragma once
-#include "UINotification.hxx"
 #include "UITypes.hxx"
+#include <Notify/Notification.hxx>
 
 namespace ui {
 namespace menu {
@@ -8,8 +8,7 @@ class ServiceMenu : public notify::Publisher,
                     public notify::Subscriber,
                     public types::Menu {
 public:
-  ServiceMenu()
-      : Node(ID.data()), Publisher(ID.data()), Subscriber(ID.data()) {}
+  ServiceMenu() : Node(ID), Publisher(ID), Subscriber(ID) {}
 
   void evaluateState() override {
     if (m_entries.empty()) {
@@ -20,15 +19,12 @@ public:
     }
   }
 
-  void notify(const std::string &publisher, opt_str_ref context) override {
-    updateEntries(context);
-    evaluateState();
-  }
+  void notify(uint64_t publisher) override;
 
-  static constexpr std::string_view ID = "SERVICE_MENU";
+  static constexpr uint64_t ID = 0x2;
 
 private:
-  void updateEntries(opt_str_ref context);
+  void updateEntries();
 };
 } // namespace menu
 } // namespace ui

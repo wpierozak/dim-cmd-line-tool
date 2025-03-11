@@ -1,21 +1,27 @@
 #include <UI/UICommandMenu.hxx>
 #include <UI/UIMainMenu.hxx>
+#include <UI/UIObjects.hxx>
 namespace ui {
 namespace menu {
-void CommandMenu::updateEntries(opt_str_ref contextOpt) {
+
+void CommandMenu::notify(uint64_t publisher) {
+  updateEntries();
+  evaluateState();
+}
+void CommandMenu::updateEntries() {
   m_entries.clear();
-  if (contextOpt.has_value() == false) {
+  if (objects::serviceMenu->isNull()) {
     return;
   }
-  auto context = *contextOpt;
+
+  auto &context = objects::serviceMenu->option();
 
   auto source = DIM_MANAGER.getCommands(context);
   if (source.empty()) {
     return;
   }
-
-  std::transform(source.begin(), source.end(), std::back_inserter(m_entries),
-                 [](const std::string &entry) { return entry; });
+  m_entries.insert(m_entries.end(), std::make_move_iterator(source.begin()),
+                   std::make_move_iterator(source.end()));
   m_entries.push_back(SEND_CMD_INPUT.data());
 }
 } // namespace menu
