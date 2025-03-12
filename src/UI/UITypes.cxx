@@ -5,21 +5,22 @@
 namespace ui {
 namespace types {
 
-void MessageBox::notify(uint64_t publisher) 
-{
-  if(publisher == objects::mainMenu->identity()){
+void MessageBox::notify(uint64_t publisher) {
+  if (publisher == objects::mainMenu->identity()) {
     m_content("");
-  }
-  if(publisher == objects::serviceMenu->identity()){
+  } 
+
+  if (publisher == objects::serviceMenu->identity()) {
     DIM_MANAGER.unsubscribeServiceData(identity(), m_currentService);
-    
-    if(objects::serviceMenu->isNull() == false){
+    if (objects::serviceMenu->isNull() == false &&
+        DIM_MANAGER.isSubscriber(objects::serviceMenu->option())) {
       m_currentService = objects::serviceMenu->option();
       DIM_MANAGER.subscribeServiceData(objects::messageBox, m_currentService);
     }
-  } else {
-    evaluateState();
+    m_content("");
   }
+  
+  evaluateState();
 }
 
 void MessageBox::evaluateState() {
@@ -28,7 +29,8 @@ void MessageBox::evaluateState() {
     printLatestData();
   } else if (ui::objects::mainMenu->option() == menu::main::LOGS) {
     printLogs();
-  } else if (ui::objects::mainMenu->option() == menu::main::SEND_COMMAND_WAIT) {
+  } else if (ui::objects::mainMenu->option() == menu::main::SEND_COMMAND_WAIT ||
+  ui::objects::mainMenu->option() == menu::main::SEND_COMMAND) {
     printCommand();
   } else {
     m_content("");
@@ -97,12 +99,15 @@ ftxui::Element MultiLineText::Render() {
 }
 
 void Command::notify(uint64_t publisher) {
+  m_response.reset();
+  m_errorMessage.reset();
+
   if (publisher == ui::objects::serviceMenu->identity()) {
     if (ui::objects::serviceMenu->nullableOption().has_value()) {
       m_commandSender = ui::objects::serviceMenu->option();
     }
   } else if (publisher == ui::objects::commandsMenu->identity()) {
-    if(objects::commandsMenu->isNull()){
+    if (objects::commandsMenu->isNull()) {
       return;
     }
     auto context = objects::commandsMenu->option();
@@ -132,6 +137,7 @@ void Command::executeAndWait() {
   } else {
     m_response = res.result.value_or("");
   }
+  notifyAll();
 }
 
 void Command::execute() {
@@ -147,11 +153,14 @@ void Command::execute() {
   } else {
     res = DIM_MANAGER.executeKnownCommand(m_commandSender, m_command, false);
   }
+
   if (res.isError()) {
     m_errorMessage = res.error.value_or("Failed to executed command");
   } else {
-    m_response = res.result;
+    m_response = "Command sent";
   }
+
+  notifyAll();
 }
 } // namespace types
 } // namespace ui

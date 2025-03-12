@@ -102,7 +102,7 @@ private:
   uint32_t m_lineNumber{10};
 };
 
-class Command : public notify::Subscriber {
+class Command : public notify::Subscriber, public notify::Publisher {
 public:
   enum class State { Invalid, Active, Ready, Waiting, Finished, Failure };
 
@@ -126,7 +126,7 @@ public:
   }
   enum class Type { Known, Input };
 
-  Command(uint64_t ID) : Node(ID), Subscriber(ID) {}
+  Command(uint64_t ID) : Node(ID), Subscriber(ID), Publisher(ID) {}
   void notify(uint64_t publisher) override;
 
   State state() { return m_state; }

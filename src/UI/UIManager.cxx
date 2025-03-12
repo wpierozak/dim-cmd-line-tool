@@ -4,13 +4,17 @@ namespace ui {
 void Manager::runUI() {
   ui::types::Root root;
   root.subscribe(ui::objects::mainMenu);
-  root.subscribe(ui::objects::messageBox);
+  // root.subscribe(ui::objects::messageBox);
 
   ui::objects::mainMenu->subscribe(ui::objects::serviceMenu);
   ui::objects::mainMenu->subscribe(ui::objects::command);
   ui::objects::serviceMenu->subscribe(ui::objects::commandsMenu);
   ui::objects::serviceMenu->subscribe(ui::objects::command);
+  ui::objects::serviceMenu->subscribe(ui::objects::messageBox);
   ui::objects::commandsMenu->subscribe(ui::objects::command);
+  ui::objects::commandsMenu->subscribe(ui::objects::messageBox);
+
+  objects::command->subscribe(ui::objects::messageBox);
 
   // ui::objects::mainMenu->updateEntries();
   auto button = ftxui::Button("Enter", [&] { enterClicked(); });
