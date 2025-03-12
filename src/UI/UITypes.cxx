@@ -7,6 +7,9 @@ namespace types {
 
 void MessageBox::notify(uint64_t publisher) 
 {
+  if(publisher == objects::mainMenu->identity()){
+    m_content("");
+  }
   if(publisher == objects::serviceMenu->identity()){
     DIM_MANAGER.unsubscribeServiceData(identity(), m_currentService);
     
@@ -14,11 +17,7 @@ void MessageBox::notify(uint64_t publisher)
       m_currentService = objects::serviceMenu->option();
       DIM_MANAGER.subscribeServiceData(objects::messageBox, m_currentService);
     }
-
-    if (ui::objects::mainMenu->option() == menu::main::PRINT_LATEST_DATA) {
-      printLatestData();
-    } 
-  } else if(publisher == objects::mainMenu->identity()){
+  } else {
     evaluateState();
   }
 }
