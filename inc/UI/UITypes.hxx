@@ -86,6 +86,18 @@ public:
     m_content.firstLine(m_first);
   }
 
+  void increasePrintedLinesNum(){
+    m_lineNumber++;
+    m_content.lineNumber(m_lineNumber);
+  }
+
+  void decreasePrintedLineNum(){
+    if(m_lineNumber > 5){
+      m_lineNumber--;
+    }
+    m_content.lineNumber(m_lineNumber);
+  }
+
 private:
   void printLogs();
   void printLatestData();

@@ -64,7 +64,7 @@ void Manager::runUI() {
     } else if (event == ftxui::Event::ArrowRightCtrl) {
       ui::objects::messageBox->moveTextLineUp();
       return true;
-    }
+    } 
     return false;
   });
 
